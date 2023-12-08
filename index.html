@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,43 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
+
 <body>
     <header>
         <h1>Entertainment Search</h1>
     </header>
     <main>
+        <aside>
+            <div>
+                <h2>search for Movies or TV Shows</h2>
+
+                <form id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Enter Title">
+                    <button id="searchBtn">
+                        Search
+                    </button>
+                </form>
+            </div>
+
+            <div>
+                <h2>Powered By:</h2>
+                <img src="TMDB" alt="TMDB Logo">
+                <img src="Youtube" alt="YouTube Logo">
+            </div>
+        </aside>
+        <section>
+            <div class="row">
+                <div id="posterContainer">
+                    <img src="" alt="poster image" id="posterImg">
+                </div>
+                <div>
+                    <h2 id="titleDisplay"></h2>
+                   <div>
+                    <h3>Plot Summary</h3>
+                 </div> 
+                </div>
+            </div>
+        </section>
 
     </main>
     <footer>
@@ -19,4 +52,5 @@
     </footer>
     <script src="./assets/js/script.js"></script>
 </body>
+
 </html>
