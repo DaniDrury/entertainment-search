@@ -14,6 +14,16 @@
         <h1>Entertainment Search</h1>
     </header>
     <main>
+        <aside class="flexbox-column">
+            <div>
+                <h2>search for Movies or TV Shows</h2>
+                <form id="searchForm">
+                    <input type="text" id="searchInput" placeholder="Enter Title">
+                    <button id="searchBtn" type="submit">Search</button>
+                </form>
+            </div>
+            <div>
+                <h3>Powered By:</h3>
         <aside>
             <div>
                 <h2>search for Movies or TV Shows</h2>
@@ -32,11 +42,41 @@
                 <img src="Youtube" alt="YouTube Logo">
             </div>
         </aside>
+        <section id="landingPage">
+            <img src="multiplePosters" alt="collage of movie posters">
+        </section>
+        <section id="searchResultsContainer" class="display-none display-flex-row">
         <section>
             <div class="row">
                 <div id="posterContainer">
                     <img src="" alt="poster image" id="posterImg">
                 </div>
+                <article class="display-flex-column">
+                    <h2 id="titleDisplay">Test Title</h2>
+                    <div class="display-flex-column-maybe??">
+                        <div id="plotSumContainer">
+                            <h3>Plot Summary</h3>
+                            <p id="plotSum"></p>
+                        </div>
+                        <div id="additionalData">
+                            <p>Release Date: <span id="releaseDate"></span></p>
+                            <p>Rating: <span id="rating"></span></p>
+                            <p>Reviews: <span id="reviews"></span></p>
+                            <p>Director: <span id="director"></span></p>
+                            <p>Cast: <span id="cast"></span></p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            <div class="row">
+                <div id="trailerContainer">
+                </div>
+                <div id="streamingContainer">
+                    <h3>Streaming Options</h3>
+                    <ul id="streamingList"></ul>
+                </div>
+            </div>
+        </section>
                 <div>
                     <h2 id="titleDisplay"></h2>
                    <div>
@@ -45,7 +85,6 @@
                 </div>
             </div>
         </section>
-
     </main>
     <footer>
         <p>&copy Character Coders 2023</p>
