@@ -41,7 +41,7 @@ async function fetchYoutubeTrailer(userInput) {
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
   /* Need to add a validation for the correct video in the array */
-  ytPlayer.cueVideoById(videosArr[2].key);
+  ytPlayer.cueVideoById(videosArr[0].key);
 }
 
 // Function to render the movie poster on the page
@@ -69,10 +69,43 @@ async function fetchTmdbMovieDetail(movieId) {
   }
 }
 
+// function to display top 5 results of search - allow user to select specific one
+function displayTop5(results) {
+  const ulEl = document.getElementById('thumbList');
+  ulEl.innerHTML = '';
+
+  // create and append 5 possible matches to user query
+  for (let i = 0; i < 5; i++) {
+    let thumbnail = document.createElement('li');
+    let thumbContainer = document.createElement('div');
+    thumbContainer.setAttribute('class', 'card');
+    let thumbTitle = document.createElement('h3');
+    let thumbPoster = document.createElement('img');
+    let thumbRelease = document.createElement('p');
+
+    thumbTitle.textContent = results[i].original_title;
+    thumbPoster.setAttribute('src', 'https://image.tmdb.org/t/p/w92' + results[i].poster_path);
+    thumbRelease.textContent = 'Release Date: ' + results[i].release_date;
+
+    thumbContainer.appendChild(thumbTitle);
+    thumbContainer.appendChild(thumbPoster);
+    thumbContainer.appendChild(thumbRelease);
+    thumbnail.appendChild(thumbContainer);
+
+    ulEl.appendChild(thumbnail);
+
+    // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
+    thumbnail.addEventListener('click', (ev) => {
+      let selectedMovieId = results[i].id;
+      fetchTmdbMovieDetail(selectedMovieId);
+    })
+  }
+}
+
 // Function to fetch the movieId using the search string from the user
 async function fetchTmdbMovieId(userInput) {
   // Create an url for an API call
-  const url = `https://api.themoviedb.org/3/search/movie?query=${userInput}&api_key=a3a4488d24de37de13b91ee3283244ec`;
+  const url = `https://api.themoviedb.org/3/search/movie?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
   try {
     const response = await fetch(url);
@@ -81,11 +114,10 @@ async function fetchTmdbMovieId(userInput) {
 
     // get the movidId
     /* Might have to add validation for the correct result to use */
-    const movieId = movieData.results[0].id;
-    console.log("movieId: ", movieId);
+
+    displayTop5(movieData.results);
 
     // fetch the movidDetail
-    fetchTmdbMovieDetail(movieId);
   } catch (error) {
     console.error(error);
   }
