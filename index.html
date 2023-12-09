@@ -2,94 +2,84 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entertainment Search</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="./assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entertainment Search</title>
+  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+  <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 
 <body>
-    <header>
-        <h1>Entertainment Search</h1>
-    </header>
-    <main>
-        <aside class="flexbox-column">
-            <div>
-                <h2>search for Movies or TV Shows</h2>
-                <form id="searchForm">
-                    <input type="text" id="searchInput" placeholder="Enter Title">
-                    <button id="searchBtn" type="submit">Search</button>
-                </form>
+  <header>
+    <h1>Entertainment Search</h1>
+  </header>
+  <main>
+    <aside class="flexbox-column">
+      <div>
+        <h2>search for Movies or TV Shows</h2>
+        <form id="searchForm">
+          <input type="text" id="searchInput" placeholder="Enter Title">
+          <button id="searchBtn" type="submit">Search</button>
+        </form>
+      </div>
+    </aside>
+    <aside>
+      <div>
+        <h2>Powered By:</h2>
+        <img src="TMDB" alt="TMDB Logo">
+        <img src="Youtube" alt="YouTube Logo">
+      </div>
+    </aside>
+    <!-- Landing Section -->
+    <section id="landingPage">
+      <img src="multiplePosters" alt="collage of movie posters">
+    </section>
+    <!-- Result Section -->
+    <section id="searchResultsContainer" class="display-none display-flex-row">
+      <!-- Poster and Bio -->
+      <section>
+        <div class="row">
+          <div id="posterContainer">
+            <img src="" alt="poster image" id="posterImg">
+          </div>
+          <article class="display-flex-column">
+            <h2 id="titleDisplay">Test Title</h2>
+            <div class="display-flex-column-maybe??">
+              <div id="plotSumContainer">
+                <h3>Plot Summary</h3>
+                <p id="plotSum"></p>
+              </div>
+              <div id="additionalData">
+                <p>Release Date: <span id="releaseDate"></span></p>
+                <p>Rating: <span id="rating"></span></p>
+                <p>Reviews: <span id="reviews"></span></p>
+                <p>Director: <span id="director"></span></p>
+                <p>Cast: <span id="cast"></span></p>
+              </div>
             </div>
-            <div>
-                <h3>Powered By:</h3>
-        <aside>
-            <div>
-                <h2>search for Movies or TV Shows</h2>
+          </article>
+        </div>
+      </section>
+      <!-- Trailer and streaming options -->
+      <section>
+        <div class="row">
+          <!-- This div will be changed to iframe -->
+          <div id="trailerContainer">
+          </div>
+          <div id="streamingContainer">
+            <h3>Streaming Options</h3>
+            <ul id="streamingList"></ul>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <footer>
+    <p>&copy Character Coders 2023</p>
+  </footer>
 
-                <form id="searchForm">
-                    <input type="text" id="searchInput" placeholder="Enter Title">
-                    <button id="searchBtn">
-                        Search
-                    </button>
-                </form>
-            </div>
-
-            <div>
-                <h2>Powered By:</h2>
-                <img src="TMDB" alt="TMDB Logo">
-                <img src="Youtube" alt="YouTube Logo">
-            </div>
-        </aside>
-        <section id="landingPage">
-            <img src="multiplePosters" alt="collage of movie posters">
-        </section>
-        <section id="searchResultsContainer" class="display-none display-flex-row">
-        <section>
-            <div class="row">
-                <div id="posterContainer">
-                    <img src="" alt="poster image" id="posterImg">
-                </div>
-                <article class="display-flex-column">
-                    <h2 id="titleDisplay">Test Title</h2>
-                    <div class="display-flex-column-maybe??">
-                        <div id="plotSumContainer">
-                            <h3>Plot Summary</h3>
-                            <p id="plotSum"></p>
-                        </div>
-                        <div id="additionalData">
-                            <p>Release Date: <span id="releaseDate"></span></p>
-                            <p>Rating: <span id="rating"></span></p>
-                            <p>Reviews: <span id="reviews"></span></p>
-                            <p>Director: <span id="director"></span></p>
-                            <p>Cast: <span id="cast"></span></p>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <div class="row">
-                <div id="trailerContainer">
-                </div>
-                <div id="streamingContainer">
-                    <h3>Streaming Options</h3>
-                    <ul id="streamingList"></ul>
-                </div>
-            </div>
-        </section>
-                <div>
-                    <h2 id="titleDisplay"></h2>
-                   <div>
-                    <h3>Plot Summary</h3>
-                 </div> 
-                </div>
-            </div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy Character Coders 2023</p>
-    </footer>
-    <script src="./assets/js/script.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="./assets/js/script.js"></script>
 </body>
 
 </html>
