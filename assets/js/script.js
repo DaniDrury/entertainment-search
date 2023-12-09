@@ -1,11 +1,7 @@
-// DOM selections
-const searchFormEL = document.querySelector("#searchForm");
-const searchInputEl = document.querySelector("#searchInput");
-
 // Global Variables
 let ytPlayer;
 
-//#region Functions
+//#region Youtube API
 // Create the iframe element
 function onYouTubeIframeAPIReady() {
   ytPlayer = new YT.Player("trailerContainer", {
@@ -22,9 +18,7 @@ function onYouTubeIframeAPIReady() {
   });
 }
 // Fetch the youtube trailer and display on the iframe
-async function fetchYoutubeTrailer() {
-  const userInput = searchInputEl.value.trim();
-
+async function fetchYoutubeTrailer(userInput) {
   const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${userInput}%201%20offical%20trailer&key=AIzaSyAUg-lxn3GSY-w58E4EFURM6w-gOrZmbOw`;
 
   try {
@@ -41,59 +35,54 @@ async function fetchYoutubeTrailer() {
     console.log(error);
   }
 }
-/* ---------------------------------------------------------- */
+//#endregion Youtube API
 
-function renderTrailer(data) {
-  ytPlayer.cueVideoById(data.videos.results[2].key);
+//#region TMDB API
+// Function to load the offical trailer on the youtube player
+function loadTrailer(videosArr) {
+  /* Need to add a validation for the correct video in the array */
+  ytPlayer.cueVideoById(videosArr[2].key);
 }
 
-function renderPoster(data) {
-  const POSTER_PATH = data.poster_path;
-
+// Function to render the movie poster on the page
+function renderPoster(posterQueryParam) {
   document.querySelector(
     "#posterImg"
-  ).src = `https://image.tmdb.org/t/p/w780${POSTER_PATH}`;
+  ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
+// Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbMovieDetail(movieId) {
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
 
   try {
     let response = await fetch(url);
-    let data = await response.json();
-    console.log(data);
+    let movieDetails = await response.json();
+    console.log("movie details: ", movieDetails);
 
     // Function calls
-    renderTrailer(data);
-    renderPoster(data);
+    loadTrailer(movieDetails.videos.results);
+    renderPoster(movieDetails.poster_path);
   } catch (error) {
     console.error(error);
   }
 }
 
-async function fetchTmdbMovieId() {
-  // Get movie name from the user
-  const userInput = searchInputEl.value.trim();
-
-  // Change this to modal, can't use alert
-  if (!userInput) {
-    alert("please enter a valid movie name");
-  }
-  // Reset the form
-  searchInputEl.value = "";
-
+// Function to fetch the movieId using the search string from the user
+async function fetchTmdbMovieId(userInput) {
   // Create an url for an API call
   const url = `https://api.themoviedb.org/3/search/movie?query=${userInput}&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
   try {
     const response = await fetch(url);
-    const data = await response.json();
-    console.log(data);
+    const movieData = await response.json();
+    console.log("movie search: ", movieData);
 
     // get the movidId
-    const movieId = data.results[0].id;
-    console.log(movieId);
+    /* Might have to add validation for the correct result to use */
+    const movieId = movieData.results[0].id;
+    console.log("movieId: ", movieId);
 
     // fetch the movidDetail
     fetchTmdbMovieDetail(movieId);
@@ -101,15 +90,29 @@ async function fetchTmdbMovieId() {
     console.error(error);
   }
 }
+//#endregion TMDB API
 
-// function called on form submission
-function sumbitHandler(event) {
-  event.preventDefault();
+// Init on DOM ready
+(onDOMContentLoaded = () => {
+  // DOM selections
+  const searchFormEL = document.querySelector("#searchForm");
+  const searchInputEl = document.querySelector("#searchInput");
 
-  // fetchYoutubeTrailer();
-  fetchTmdbMovieId();
-}
-//#endregion Functions
+  // Event listener for the search form's submit event
+  searchFormEL.addEventListener("submit", (evt) => {
+    evt.preventDefault();
 
-// Event Listeners
-searchFormEL.addEventListener("submit", sumbitHandler);
+    // Get movie name from the user
+    const userInput = searchInputEl.value.trim();
+
+    // Change this to modal, can't use alert
+    if (!userInput) {
+      alert("please enter a valid movie name");
+    }
+    // Reset the form
+    searchInputEl.value = "";
+
+    // fetchYoutubeTrailer(userInput);
+    fetchTmdbMovieId(userInput);
+  });
+})();
