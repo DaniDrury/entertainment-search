@@ -3,7 +3,7 @@ let ytPlayer;
 
 //#region Youtube API
 // Create the iframe element
-function onYouTubeIframeAPIReady() {
+function renderYouTubePlayer() {
   ytPlayer = new YT.Player("youtubePlayer", {
     height: "390",
     width: "640",
@@ -170,12 +170,10 @@ async function fetchTmdbMovieId(userInput) {
 //#endregion TMDB API
 
 // Init on DOM ready
-(onDOMContentLoaded = () => {
+addEventListener("DOMContentLoaded", () => {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
   const searchInputEl = document.querySelector("#searchInput");
-
-  onYouTubeIframeAPIReady();
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
@@ -194,4 +192,8 @@ async function fetchTmdbMovieId(userInput) {
     // fetchYoutubeTrailer(userInput);
     fetchTmdbMovieId(userInput);
   });
-})();
+});
+
+addEventListener("load", () => {
+  renderYouTubePlayer();
+});
