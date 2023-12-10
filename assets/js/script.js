@@ -1,5 +1,6 @@
 // Global Variables
 let ytPlayer;
+const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
@@ -38,6 +39,25 @@ async function fetchYoutubeTrailer(userInput) {
 }
 //#endregion Youtube API
 
+// function to render the search history
+function renderSearchHistory() {
+  const searchHistoryEL = document.querySelector("#searchHistory");
+  searchHistoryEL.innerHTML = "";
+
+  for (let i = 0; i < historyArr.length; i++) {
+    const movie = historyArr[i];
+    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${movie.poster_path}"></li>`;
+
+    // Insert newest first
+    searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
+
+    // event listener for each history in the list
+    document.querySelector(`#history-${i}`).addEventListener("click", () => {
+      fetchTmdbMovieDetail(movie.id);
+    });
+  }
+}
+
 //#region TMDB API
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
@@ -54,6 +74,7 @@ function renderPoster(posterQueryParam) {
 
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
+  castListEl.innerHTML = "";
 
   for (let i = 0; i < 10; i++) {
     const htmlStr = `<li><a>${cast[i].name} as ${cast[i].character}</a></li>`;
@@ -64,6 +85,7 @@ function renderCastList(cast) {
 
 function renderMovieDetail(movieDetails) {
   const movieDetailEL = document.querySelector("#movieDetail");
+  movieDetailEL.innerHTML = "";
 
   const htmlStr = `<h2>${movieDetails.title}</h2>
     <div class="display-flex-column-maybe??">
@@ -145,6 +167,14 @@ function displayTop5(results) {
       // Reset the modal list
       ulEl.innerHTML = "";
 
+      // Save the move to local storage
+      historyArr.push(results[i]);
+      if (historyArr.length > 10) {
+        historyArr.shift();
+      }
+      localStorage.setItem("movie", JSON.stringify(historyArr));
+      renderSearchHistory();
+
       // fetch the movidDetail
       fetchTmdbMovieDetail(selectedMovieId);
     });
@@ -174,6 +204,9 @@ addEventListener("DOMContentLoaded", () => {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
   const searchInputEl = document.querySelector("#searchInput");
+
+  // Render history list from localStorage
+  renderSearchHistory();
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
