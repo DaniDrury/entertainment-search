@@ -61,8 +61,9 @@ function renderSearchHistory() {
 //#region TMDB API
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
-  /* Need to add a validation for the correct video in the array */
+  // Default to the 1st video in the array
   let trailer = videosArr[0].key;
+
   for (let i = 0; i < videosArr.length; i++) {
     const video = videosArr[i];
 
@@ -72,7 +73,12 @@ function loadTrailer(videosArr) {
       !video.name.toUpperCase().includes("TEASER")
     ) {
       trailer = video.key;
-      break;
+      // If the video name have trailer and official in it, use it and break the loop
+      if (video.name.toUpperCase().includes("OFFICIAL")) {
+        trailer = video.key;
+        // Exit the for loop if a trailer was found
+        break;
+      }
     }
   }
 
@@ -91,6 +97,7 @@ function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
   castListEl.innerHTML = "Cast: ";
 
+  // Display only 10 cast members
   for (let i = 0; i < 10; i++) {
     const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
