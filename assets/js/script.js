@@ -47,7 +47,7 @@ function renderSearchHistory() {
   for (let i = 0; i < historyArr.length; i++) {
     const responseData = historyArr[i];
     const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
-      responseData.poster_path || responseData.profile_path
+      responseData.tmdbData.poster_path || responseData.tmdbData.profile_path
     }"></li>`;
 
     // Insert newest first
@@ -55,7 +55,15 @@ function renderSearchHistory() {
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      fetchTmdbMovieDetail(responseData.id);
+      const selectedId = responseData.tmdbData.id;
+
+      if (responseData.userCategory === "movie") {
+        fetchTmdbMovieDetail(selectedId);
+      } else if (responseData.userCategory === "tv") {
+        fetchTmdbTvDetail(selectedId);
+      } else if (responseData.userCategory === "person") {
+        fetchTmdbPersonDetail(selectedId);
+      }
     });
   }
 }
@@ -259,7 +267,7 @@ function displayTop5(userCategory, results) {
       ulEl.innerHTML = "";
 
       // Save the move to local storage
-      historyArr.push(results[i]);
+      historyArr.push({ tmdbData: results[i], userCategory });
       if (historyArr.length > 10) {
         historyArr.shift();
       }
