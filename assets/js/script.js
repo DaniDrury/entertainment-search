@@ -86,56 +86,56 @@ function renderMovieDetail(movieDetails) {
 }
 
 // // Update fields for person data
-// async function fetchTmdbTvDetail(personId) {
-//   // DOM selectors
-//   const resultDisplayEl = document.querySelector("#searchResultsContainer");
-//   const landingPageEl = document.querySelector("#landingPage");
+async function fetchTmdbPersonDetail(personId) {
+  // DOM selectors
+  const resultDisplayEl = document.querySelector("#searchResultsContainer");
+  const landingPageEl = document.querySelector("#landingPage");
 
-//   // Create an url for API call
-//   const url = `https://api.themoviedb.org/3/tv/${personId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
+  // Create an url for API call
+  const url = `https://api.themoviedb.org/3/person/${personId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=images,combined_credits,external_ids`;
 
-//   try {
-//     let response = await fetch(url);
-//     let movieDetails = await response.json();
-//     console.log("movie details: ", movieDetails);
+  try {
+    let response = await fetch(url);
+    let personDetails = await response.json();
+    console.log("Person details: ", personDetails);
 
-//     // Function calls
-//     loadTrailer(movieDetails.videos.results);
-//     renderPoster(movieDetails.poster_path);
-//     renderMovieDetail(movieDetails);
+    // Function calls
+    // loadTrailer(movieDetails.videos.results);   NO TRAILER FOR PEOPLE Consider replacing with external_id calls to link to IMDb, Facebook, Instagram, TikTok, Twitter, Wikidata, Youtube, etc.
+    renderPoster(personDetails.profile_path);
+    renderMovieDetail(personDetails);  // again - can we use render Movie Detail or need to make new one? render PERSON detail?
 
-//     landingPageEl.classList.add("display-none");
-//     resultDisplayEl.classList.remove("display-none");
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }
+    landingPageEl.classList.add("display-none");
+    resultDisplayEl.classList.remove("display-none");
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // // UPDATE FIELDS FOR TV DATA
-// async function fetchTmdbTvDetail(tvId) {
-//   // DOM selectors
-//   const resultDisplayEl = document.querySelector("#searchResultsContainer");
-//   const landingPageEl = document.querySelector("#landingPage");
+async function fetchTmdbTvDetail(tvId) {
+  // DOM selectors
+  const resultDisplayEl = document.querySelector("#searchResultsContainer");
+  const landingPageEl = document.querySelector("#landingPage");
 
-//   // Create an url for API call
-//   const url = `https://api.themoviedb.org/3/tv/${tvId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
+  // Create an url for API call
+  const url = `https://api.themoviedb.org/3/tv/${tvId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews,content_ratings`;
 
-//   try {
-//     let response = await fetch(url);
-//     let movieDetails = await response.json();
-//     console.log("movie details: ", movieDetails);
+  try {
+    let response = await fetch(url);
+    let tvDetails = await response.json();
+    console.log("TV details: ", tvDetails);
 
-//     // Function calls
-//     loadTrailer(movieDetails.videos.results);
-//     renderPoster(movieDetails.poster_path);
-//     renderMovieDetail(movieDetails);
+    // Function calls
+    loadTrailer(tvDetails.videos.results);
+    renderPoster(tvDetails.poster_path);
+    renderMovieDetail(tvDetails); // can we use renderMovieDetail function or need to make new renderTvDetail function?
 
-//     landingPageEl.classList.add("display-none");
-//     resultDisplayEl.classList.remove("display-none");
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }
+    landingPageEl.classList.add("display-none");
+    resultDisplayEl.classList.remove("display-none");
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbMovieDetail(movieId) {
@@ -173,12 +173,12 @@ function displayTop5(userCategory, results) {
     const name = results[i].name || results[i].original_title;
     const image = results[i].profile_path || results[i].poster_path;
     const date = results[i].release_date || results[i].first_air_date;
-    let thumbnail = document.createElement("li");
-    let thumbContainer = document.createElement("div");
+    const thumbnail = document.createElement("li");
+    const thumbContainer = document.createElement("div");
     thumbContainer.setAttribute("class", "card");
-    let thumbTitle = document.createElement("h3");
-    let thumbPoster = document.createElement("img");
-    let thumbRelease = document.createElement("p");
+    const thumbTitle = document.createElement("h3");
+    const thumbPoster = document.createElement("img");
+    const thumbRelease = document.createElement("p");
 
     thumbTitle.textContent = name;
     thumbPoster.setAttribute(
@@ -219,7 +219,7 @@ function displayTop5(userCategory, results) {
 }
 
 // Function to fetch the movieId using the search string from the user
-async function fetchTmdbMovieId(userCategory, userInput) {
+async function fetchTmdbId(userCategory, userInput) {
   // Create an url for an API call
   const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
@@ -260,7 +260,7 @@ addEventListener("DOMContentLoaded", () => {
     searchInputEl.value = "";
 
     // fetchYoutubeTrailer(userInput);
-    fetchTmdbMovieId(userCategory, userInput);
+    fetchTmdbId(userCategory, userInput);
   });
 });
 
