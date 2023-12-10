@@ -4,7 +4,7 @@ let ytPlayer;
 //#region Youtube API
 // Create the iframe element
 function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player("trailerContainer", {
+  ytPlayer = new YT.Player("youtubePlayer", {
     height: "390",
     width: "640",
     videoId: "",
@@ -16,6 +16,7 @@ function onYouTubeIframeAPIReady() {
       // 'onStateChange': onPlayerStateChange
     },
   });
+  console.log("YouTube player loaded");
 }
 // Fetch the youtube trailer and display on the iframe
 async function fetchYoutubeTrailer(userInput) {
@@ -51,7 +52,38 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
-function renderMovieDetail() {}
+function renderCastList(cast) {
+  const castListEl = document.querySelector("#castList");
+
+  for (let i = 0; i < 10; i++) {
+    const htmlStr = `<li><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+
+    castListEl.insertAdjacentHTML("beforeend", htmlStr);
+  }
+}
+
+function renderMovieDetail(movieDetails) {
+  const movieDetailEL = document.querySelector("#movieDetail");
+
+  const htmlStr = `<h2>${movieDetails.title}</h2>
+    <div class="display-flex-column-maybe??">
+      <div id="plotSumContainer">
+        <h3>Plot Summary</h3>
+        <p>${movieDetails.overview}</p>
+      </div>
+      <div id="additionalData">
+        <p>Release Date: <span>${movieDetails.release_date}</span></p>
+        <p>Rating: <span id="rating"></span></p>
+        <p>Reviews: <span id="reviews"></span></p>
+        <p>Director: <span id="director"></span></p>
+        <ul id="castList">Cast: </ul>
+      </div>
+    </div>`;
+
+  movieDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+
+  renderCastList(movieDetails.credits.cast);
+}
 
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbMovieDetail(movieId) {
@@ -70,7 +102,7 @@ async function fetchTmdbMovieDetail(movieId) {
     // Function calls
     loadTrailer(movieDetails.videos.results);
     renderPoster(movieDetails.poster_path);
-    renderMovieDetail();
+    renderMovieDetail(movieDetails);
 
     landingPageEl.classList.add("display-none");
     resultDisplayEl.classList.remove("display-none");
@@ -142,6 +174,8 @@ async function fetchTmdbMovieId(userInput) {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
   const searchInputEl = document.querySelector("#searchInput");
+
+  onYouTubeIframeAPIReady();
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
