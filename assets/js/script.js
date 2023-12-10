@@ -72,14 +72,19 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
+// Function to render the cast list and listen to click on their name to give more detail on them.
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
   castListEl.innerHTML = "";
 
   for (let i = 0; i < 10; i++) {
-    const htmlStr = `<li><a>${cast[i].name} as ${cast[i].character}</a></li>`;
-
+    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
+
+    // Event listener to fetch the detail of the cast
+    document.querySelector(`#cast-${i}`).addEventListener("click", () => {
+      // fetchTmdbPersonDetail(cast[i].id);
+    });
   }
 }
 
