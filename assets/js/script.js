@@ -85,6 +85,58 @@ function renderMovieDetail(movieDetails) {
   renderCastList(movieDetails.credits.cast);
 }
 
+// // Update fields for person data
+// async function fetchTmdbTvDetail(personId) {
+//   // DOM selectors
+//   const resultDisplayEl = document.querySelector("#searchResultsContainer");
+//   const landingPageEl = document.querySelector("#landingPage");
+
+//   // Create an url for API call
+//   const url = `https://api.themoviedb.org/3/tv/${personId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
+
+//   try {
+//     let response = await fetch(url);
+//     let movieDetails = await response.json();
+//     console.log("movie details: ", movieDetails);
+
+//     // Function calls
+//     loadTrailer(movieDetails.videos.results);
+//     renderPoster(movieDetails.poster_path);
+//     renderMovieDetail(movieDetails);
+
+//     landingPageEl.classList.add("display-none");
+//     resultDisplayEl.classList.remove("display-none");
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
+
+// // UPDATE FIELDS FOR TV DATA
+// async function fetchTmdbTvDetail(tvId) {
+//   // DOM selectors
+//   const resultDisplayEl = document.querySelector("#searchResultsContainer");
+//   const landingPageEl = document.querySelector("#landingPage");
+
+//   // Create an url for API call
+//   const url = `https://api.themoviedb.org/3/tv/${tvId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
+
+//   try {
+//     let response = await fetch(url);
+//     let movieDetails = await response.json();
+//     console.log("movie details: ", movieDetails);
+
+//     // Function calls
+//     loadTrailer(movieDetails.videos.results);
+//     renderPoster(movieDetails.poster_path);
+//     renderMovieDetail(movieDetails);
+
+//     landingPageEl.classList.add("display-none");
+//     resultDisplayEl.classList.remove("display-none");
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
+
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbMovieDetail(movieId) {
   // DOM selectors
@@ -112,12 +164,15 @@ async function fetchTmdbMovieDetail(movieId) {
 }
 
 // function to display top 5 results of search - allow user to select specific one
-function displayTop5(results) {
+function displayTop5(userCategory, results) {
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5; i++) {
+    const name = results[i].name || results[i].original_title;
+    const image = results[i].profile_path || results[i].poster_path;
+    const date = results[i].release_date || results[i].first_air_date;
     let thumbnail = document.createElement("li");
     let thumbContainer = document.createElement("div");
     thumbContainer.setAttribute("class", "card");
@@ -125,12 +180,18 @@ function displayTop5(results) {
     let thumbPoster = document.createElement("img");
     let thumbRelease = document.createElement("p");
 
-    thumbTitle.textContent = results[i].original_title;
+    thumbTitle.textContent = name;
     thumbPoster.setAttribute(
       "src",
-      "https://image.tmdb.org/t/p/w92" + results[i].poster_path
+      "https://image.tmdb.org/t/p/w92" + image
     );
-    thumbRelease.textContent = "Release Date: " + results[i].release_date;
+    
+    if (date) {
+      thumbRelease.textContent = "Release Date: " + date;
+    } else {
+      // or something else?  what do we want to do?
+      thumbRelease.setAttribute('display','none')
+    }
 
     thumbContainer.appendChild(thumbTitle);
     thumbContainer.appendChild(thumbPoster);
@@ -141,28 +202,34 @@ function displayTop5(results) {
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
     thumbnail.addEventListener("click", (ev) => {
-      let selectedMovieId = results[i].id;
+      let selectedId = results[i].id;
       // Reset the modal list
       ulEl.innerHTML = "";
 
       // fetch the movidDetail
-      fetchTmdbMovieDetail(selectedMovieId);
+      if (userCategory === 'movie') {
+        fetchTmdbMovieDetail(selectedId);
+      } else if (userCategory === 'tv') {
+        fetchTmdbTvDetail(selectedId);
+      } else if (userCategory === 'person') {
+        fetchTmdbPersonDetail(selectedId);
+      }
     });
   }
 }
 
 // Function to fetch the movieId using the search string from the user
-async function fetchTmdbMovieId(userInput) {
+async function fetchTmdbMovieId(userCategory, userInput) {
   // Create an url for an API call
-  const url = `https://api.themoviedb.org/3/search/movie?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
+  const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
   try {
     const response = await fetch(url);
-    const movieData = await response.json();
-    console.log("movie search: ", movieData);
+    const responseData = await response.json();
+    console.log(`${userCategory} search: `, responseData);
 
     // Display top 5 results for user to select the right movie
-    displayTop5(movieData.results);
+    displayTop5(userCategory, responseData.results);
   } catch (error) {
     console.error(error);
   }
@@ -173,6 +240,7 @@ async function fetchTmdbMovieId(userInput) {
 addEventListener("DOMContentLoaded", () => {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
+  const searchSelectEl = document.querySelector('#mediaSelect');
   const searchInputEl = document.querySelector("#searchInput");
 
   // Event listener for the search form's submit event
@@ -180,17 +248,19 @@ addEventListener("DOMContentLoaded", () => {
     evt.preventDefault();
 
     // Get movie name from the user
+    const userCategory = searchSelectEl.value;
     const userInput = searchInputEl.value.trim();
 
     // Change this to modal, can't use alert
-    if (!userInput) {
-      alert("please enter a valid movie name");
+    if (!userInput || !userCategory) {
+      alert("Please enter a Search Category AND input a valid title or person name");
     }
     // Reset the form
+    searchSelectEl.value = "";
     searchInputEl.value = "";
 
     // fetchYoutubeTrailer(userInput);
-    fetchTmdbMovieId(userInput);
+    fetchTmdbMovieId(userCategory, userInput);
   });
 });
 
