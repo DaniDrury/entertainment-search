@@ -65,6 +65,7 @@ function renderCastList(cast) {
 function renderMovieDetail(movieDetails) {
   const movieDetailEL = document.querySelector("#movieDetail");
 
+  // create if / else statement to handle different category data?
   const htmlStr = `<h2>${movieDetails.title}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
@@ -85,7 +86,7 @@ function renderMovieDetail(movieDetails) {
   renderCastList(movieDetails.credits.cast);
 }
 
-// // Update fields for person data
+// Fetch person details
 async function fetchTmdbPersonDetail(personId) {
   // DOM selectors
   const resultDisplayEl = document.querySelector("#searchResultsContainer");
@@ -111,7 +112,7 @@ async function fetchTmdbPersonDetail(personId) {
   }
 }
 
-// // UPDATE FIELDS FOR TV DATA
+// Fetch TV Show details
 async function fetchTmdbTvDetail(tvId) {
   // DOM selectors
   const resultDisplayEl = document.querySelector("#searchResultsContainer");
