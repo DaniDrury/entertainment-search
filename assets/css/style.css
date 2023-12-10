@@ -4,3 +4,7 @@ img #logoContainer {
 #logoContainer {
     width: 25%;
 }
+
+.display-none {
+    display: none;
+}

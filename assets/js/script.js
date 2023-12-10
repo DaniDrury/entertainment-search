@@ -4,7 +4,7 @@ let ytPlayer;
 //#region Youtube API
 // Create the iframe element
 function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player("trailerContainer", {
+  ytPlayer = new YT.Player("youtubePlayer", {
     height: "390",
     width: "640",
     videoId: "",
@@ -16,6 +16,7 @@ function onYouTubeIframeAPIReady() {
       // 'onStateChange': onPlayerStateChange
     },
   });
+  console.log("YouTube player loaded");
 }
 // Fetch the youtube trailer and display on the iframe
 async function fetchYoutubeTrailer(userInput) {
@@ -51,8 +52,45 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
+function renderCastList(cast) {
+  const castListEl = document.querySelector("#castList");
+
+  for (let i = 0; i < 10; i++) {
+    const htmlStr = `<li><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+
+    castListEl.insertAdjacentHTML("beforeend", htmlStr);
+  }
+}
+
+function renderMovieDetail(movieDetails) {
+  const movieDetailEL = document.querySelector("#movieDetail");
+
+  const htmlStr = `<h2>${movieDetails.title}</h2>
+    <div class="display-flex-column-maybe??">
+      <div id="plotSumContainer">
+        <h3>Plot Summary</h3>
+        <p>${movieDetails.overview}</p>
+      </div>
+      <div id="additionalData">
+        <p>Release Date: <span>${movieDetails.release_date}</span></p>
+        <p>Rating: <span id="rating"></span></p>
+        <p>Reviews: <span id="reviews"></span></p>
+        <p>Director: <span id="director"></span></p>
+        <ul id="castList">Cast: </ul>
+      </div>
+    </div>`;
+
+  movieDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+
+  renderCastList(movieDetails.credits.cast);
+}
+
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbMovieDetail(movieId) {
+  // DOM selectors
+  const resultDisplayEl = document.querySelector("#searchResultsContainer");
+  const landingPageEl = document.querySelector("#landingPage");
+
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews`;
 
@@ -64,6 +102,10 @@ async function fetchTmdbMovieDetail(movieId) {
     // Function calls
     loadTrailer(movieDetails.videos.results);
     renderPoster(movieDetails.poster_path);
+    renderMovieDetail(movieDetails);
+
+    landingPageEl.classList.add("display-none");
+    resultDisplayEl.classList.remove("display-none");
   } catch (error) {
     console.error(error);
   }
@@ -71,21 +113,24 @@ async function fetchTmdbMovieDetail(movieId) {
 
 // function to display top 5 results of search - allow user to select specific one
 function displayTop5(results) {
-  const ulEl = document.getElementById('thumbList');
-  ulEl.innerHTML = '';
+  const ulEl = document.getElementById("thumbList");
+  ulEl.innerHTML = "";
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5; i++) {
-    let thumbnail = document.createElement('li');
-    let thumbContainer = document.createElement('div');
-    thumbContainer.setAttribute('class', 'card');
-    let thumbTitle = document.createElement('h3');
-    let thumbPoster = document.createElement('img');
-    let thumbRelease = document.createElement('p');
+    let thumbnail = document.createElement("li");
+    let thumbContainer = document.createElement("div");
+    thumbContainer.setAttribute("class", "card");
+    let thumbTitle = document.createElement("h3");
+    let thumbPoster = document.createElement("img");
+    let thumbRelease = document.createElement("p");
 
     thumbTitle.textContent = results[i].original_title;
-    thumbPoster.setAttribute('src', 'https://image.tmdb.org/t/p/w92' + results[i].poster_path);
-    thumbRelease.textContent = 'Release Date: ' + results[i].release_date;
+    thumbPoster.setAttribute(
+      "src",
+      "https://image.tmdb.org/t/p/w92" + results[i].poster_path
+    );
+    thumbRelease.textContent = "Release Date: " + results[i].release_date;
 
     thumbContainer.appendChild(thumbTitle);
     thumbContainer.appendChild(thumbPoster);
@@ -95,10 +140,14 @@ function displayTop5(results) {
     ulEl.appendChild(thumbnail);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-    thumbnail.addEventListener('click', (ev) => {
+    thumbnail.addEventListener("click", (ev) => {
       let selectedMovieId = results[i].id;
+      // Reset the modal list
+      ulEl.innerHTML = "";
+
+      // fetch the movidDetail
       fetchTmdbMovieDetail(selectedMovieId);
-    })
+    });
   }
 }
 
@@ -112,12 +161,8 @@ async function fetchTmdbMovieId(userInput) {
     const movieData = await response.json();
     console.log("movie search: ", movieData);
 
-    // get the movidId
-    /* Might have to add validation for the correct result to use */
-
+    // Display top 5 results for user to select the right movie
     displayTop5(movieData.results);
-
-    // fetch the movidDetail
   } catch (error) {
     console.error(error);
   }
@@ -129,6 +174,8 @@ async function fetchTmdbMovieId(userInput) {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
   const searchInputEl = document.querySelector("#searchInput");
+
+  onYouTubeIframeAPIReady();
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
