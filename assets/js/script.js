@@ -62,7 +62,21 @@ function renderSearchHistory() {
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
   /* Need to add a validation for the correct video in the array */
-  ytPlayer.cueVideoById(videosArr[0].key);
+  let trailer = videosArr[0].key;
+  for (let i = 0; i < videosArr.length; i++) {
+    const video = videosArr[i];
+
+    // Check if video name have "trailer" and doesn't have "teaser" in it.
+    if (
+      video.name.toUpperCase().includes("TRAILER") &&
+      !video.name.toUpperCase().includes("TEASER")
+    ) {
+      trailer = video.key;
+      break;
+    }
+  }
+
+  ytPlayer.cueVideoById(trailer);
 }
 
 // Function to render the movie poster on the page
@@ -83,6 +97,7 @@ function renderCastList(cast) {
 
     // Event listener to fetch the detail of the cast
     document.querySelector(`#cast-${i}`).addEventListener("click", () => {
+      console.log(cast[i].name);
       // fetchTmdbPersonDetail(cast[i].id);
     });
   }
