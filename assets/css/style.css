@@ -8,3 +8,7 @@ img #logoContainer {
 .display-none {
     display: none;
 }
+
+.row {
+    display: flex;
+}
