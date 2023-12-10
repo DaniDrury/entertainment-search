@@ -45,15 +45,17 @@ function renderSearchHistory() {
   searchHistoryEL.innerHTML = "";
 
   for (let i = 0; i < historyArr.length; i++) {
-    const movie = historyArr[i];
-    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${movie.poster_path}"></li>`;
+    const responseData = historyArr[i];
+    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
+      responseData.poster_path || responseData.profile_path
+    }"></li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      fetchTmdbMovieDetail(movie.id);
+      fetchTmdbMovieDetail(responseData.id);
     });
   }
 }
@@ -152,7 +154,7 @@ async function fetchTmdbPersonDetail(personId) {
     // Function calls
     // loadTrailer(movieDetails.videos.results);   NO TRAILER FOR PEOPLE Consider replacing with external_id calls to link to IMDb, Facebook, Instagram, TikTok, Twitter, Wikidata, Youtube, etc.
     renderPoster(personDetails.profile_path);
-    renderMovieDetail(personDetails);  // again - can we use render Movie Detail or need to make new one? render PERSON detail?
+    renderMovieDetail(personDetails); // again - can we use render Movie Detail or need to make new one? render PERSON detail?
 
     landingPageEl.classList.add("display-none");
     resultDisplayEl.classList.remove("display-none");
@@ -220,9 +222,12 @@ function displayTop5(userCategory, results) {
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5; i++) {
+    // Result datas
     const name = results[i].name || results[i].original_title;
     const image = results[i].profile_path || results[i].poster_path;
     const date = results[i].release_date || results[i].first_air_date;
+
+    // Created Elements
     const thumbnail = document.createElement("li");
     const thumbContainer = document.createElement("div");
     thumbContainer.setAttribute("class", "card");
@@ -231,16 +236,13 @@ function displayTop5(userCategory, results) {
     const thumbRelease = document.createElement("p");
 
     thumbTitle.textContent = name;
-    thumbPoster.setAttribute(
-      "src",
-      "https://image.tmdb.org/t/p/w92" + image
-    );
-    
+    thumbPoster.setAttribute("src", "https://image.tmdb.org/t/p/w92" + image);
+
     if (date) {
       thumbRelease.textContent = "Release Date: " + date;
     } else {
       // or something else?  what do we want to do?
-      thumbRelease.setAttribute('display','none')
+      thumbRelease.setAttribute("display", "none");
     }
 
     thumbContainer.appendChild(thumbTitle);
@@ -265,11 +267,11 @@ function displayTop5(userCategory, results) {
       renderSearchHistory();
 
       // fetch the movidDetail
-      if (userCategory === 'movie') {
+      if (userCategory === "movie") {
         fetchTmdbMovieDetail(selectedId);
-      } else if (userCategory === 'tv') {
+      } else if (userCategory === "tv") {
         fetchTmdbTvDetail(selectedId);
-      } else if (userCategory === 'person') {
+      } else if (userCategory === "person") {
         fetchTmdbPersonDetail(selectedId);
       }
     });
@@ -298,7 +300,7 @@ async function fetchTmdbId(userCategory, userInput) {
 addEventListener("DOMContentLoaded", () => {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
-  const searchSelectEl = document.querySelector('#mediaSelect');
+  const searchSelectEl = document.querySelector("#mediaSelect");
   const searchInputEl = document.querySelector("#searchInput");
 
   // Render history list from localStorage
@@ -314,7 +316,9 @@ addEventListener("DOMContentLoaded", () => {
 
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
-      alert("Please enter a Search Category AND input a valid title or person name");
+      alert(
+        "Please enter a Search Category AND input a valid title or person name"
+      );
     }
     // Reset the form
     searchSelectEl.value = "";
