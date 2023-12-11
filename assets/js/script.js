@@ -80,27 +80,29 @@ function renderSearchHistory() {
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
   // Default to the 1st video in the array
-  let trailer = videosArr[0].key;
+  let trailerKey = videosArr[0].key;
 
   for (let i = 0; i < videosArr.length; i++) {
-    const video = videosArr[i];
+    // Destructuring video object
+    const { name, key } = videosArr[i];
 
     // Check if video name have "trailer" and doesn't have "teaser" in it.
     if (
-      video.name.toUpperCase().includes("TRAILER") &&
-      !video.name.toUpperCase().includes("TEASER")
+      name.toUpperCase().includes("TRAILER") &&
+      !name.toUpperCase().includes("TEASER")
     ) {
-      trailer = video.key;
+      trailerKey = key;
       // If the video name have trailer and official in it, use it and break the loop
-      if (video.name.toUpperCase().includes("OFFICIAL")) {
-        trailer = video.key;
+      if (name.toUpperCase().includes("OFFICIAL")) {
+        trailerKey = key;
         // Exit the for loop if a trailer was found
         break;
       }
     }
   }
 
-  ytPlayer.cueVideoById(trailer);
+  // Cue up the trailer video in the YouTube player
+  ytPlayer.cueVideoById(trailerKey);
 }
 
 // Function to render the movie poster on the page
@@ -115,13 +117,18 @@ function renderRating(ratings) {
   const ratingEl = document.querySelector("#rating");
 
   for (let i = 0; i < ratings.length; i++) {
+    // Destructuring ratings object
     const { rating, iso_3166_1 } = ratings[i];
 
+    // Check for US rating
     if (iso_3166_1 === "US") {
       ratingEl.textContent = rating;
-      break;
+      // Quit the function after setting the rating
+      return;
     }
   }
+  // No US rating found
+  ratingEl.textContent = "N/A";
 }
 
 // Function to render the cast list and listen to click on their name to give more detail on them.
@@ -151,12 +158,12 @@ function renderDetails(details, userCategory) {
   // render different details depending on search category (movie, tv or person)
   let htmlStr = "";
 
+  // render Movie/TV details
   if (userCategory !== "person") {
-    // render Movie details
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
     playerAndStreamEl.classList.remove("display-none");
 
-    // insert HTML creating Movie Detail elements
+    // insert HTML creating Movie/TV Detail elements
     htmlStr = `<h2>${details.title || details.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
@@ -172,8 +179,9 @@ function renderDetails(details, userCategory) {
         <ul id="castList">Cast: </ul>
       </div>
     </div>`;
-  } else {
+
     // render Person details
+  } else {
     // sets visibility of video and streaming options elements to none
     playerAndStreamEl.classList.add("display-none");
 
