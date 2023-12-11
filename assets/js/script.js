@@ -151,28 +151,28 @@ function renderDetails(details, userCategory) {
   // render different details depending on search category (movie, tv or person)
   let htmlStr = "";
 
-  if (userCategory === "movie") {
+  if (userCategory !== "person") {
     // render Movie details
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
     playerAndStreamEl.classList.remove("display-none");
 
     // insert HTML creating Movie Detail elements
-    htmlStr = `<h2>${details.title}</h2>
+    htmlStr = `<h2>${details.title || details.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
         <h3>Plot Summary</h3>
         <p>${details.overview}</p>
       </div>
       <div id="additionalData">
-        <p>Release Date: <span>${details.release_date}</span></p>
-        <p>Rating: <span></span></p>
-        <p>Director: <span id="director"></span></p>
+        <p>Release Date: <span>${
+          details.release_date || details.first_air_date
+        }</span></p>
+        <p>Rating: <span id="rating"></span></p>
+        <ul id="directorsOrSeasons"></ul>
         <ul id="castList">Cast: </ul>
       </div>
     </div>`;
-  }
-
-  if (userCategory === "person") {
+  } else {
     // render Person details
     // sets visibility of video and streaming options elements to none
     playerAndStreamEl.classList.add("display-none");
@@ -188,27 +188,6 @@ function renderDetails(details, userCategory) {
         <p>Birthday: <span>${details.birthday}</span></p>
         <p>Place of Birth: <span>${details.place_of_birth}</span></p>
         <ul id="credits">Other Credits: </ul>
-      </div>
-    </div>`;
-  }
-
-  if (userCategory === "tv") {
-    // Render TV Show Details
-    // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-    playerAndStreamEl.classList.remove("display-none");
-
-    // insert HTML creating TV Show Detail elements
-    htmlStr = `<h2>${details.name}</h2>
-    <div class="display-flex-column-maybe??">
-      <div id="plotSumContainer">
-        <h3>Plot Summary</h3>
-        <p>${details.overview}</p>
-      </div>
-      <div id="additionalData">
-        <p>Release Date: <span>${details.first_air_date}</span></p>
-        <p>Rating: <span id="rating"></span></p>
-        <ul id="seasons">Seasons: </ul>
-        <ul id="castList">Cast: </ul>
       </div>
     </div>`;
   }
