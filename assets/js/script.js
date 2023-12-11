@@ -145,6 +145,14 @@ function renderCredits(credits) {
   // deconstruct credits into cast & crew
   let { cast, crew } = credits;
 
+  // hiding either cast or crew UL element if no associated responses
+  if (cast.length === 0) {
+    castUl.classList.add('display-none');
+  }
+  if (crew.length === 0) {
+    crewUl.classList.add('display-none');
+  }
+
   // limiting responses to 10
   let limit = 10;
 
@@ -176,7 +184,7 @@ function renderCredits(credits) {
   limit = 10;
 
   // create crewArray for purposes of looking for duplicate credits
-  let crewArray = [crew[0]];
+  let crewArray = crew[0] ? [crew[0]]: [];
 
   // deconstruct crew object & get 10 crew credits - combining duplicates into one listing with multiple jobs
   for (let i = 1; i < crew.length && i < limit; i++) {
@@ -201,7 +209,9 @@ function renderCredits(credits) {
   }
 
   // deconstruct crewArray objects and create li items for each
-  crewArray.forEach(el => {
+  console.log(crewArray);
+  
+   crewArray.forEach(el => {
     const { job, title, release_date, id, media_type, poster_path } = el;
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
