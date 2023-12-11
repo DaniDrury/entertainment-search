@@ -47,8 +47,9 @@ function renderSearchHistory() {
 
   for (let i = 0; i < historyArr.length; i++) {
     const responseData = historyArr[i];
-    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${responseData.tmdbData.poster_path || responseData.tmdbData.profile_path
-      }"></li>`;
+    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
+      responseData.tmdbData.poster_path || responseData.tmdbData.profile_path
+    }"></li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
@@ -108,7 +109,7 @@ function renderCastList(cast) {
   castListEl.innerHTML = "Cast: ";
 
   // Display only 10 cast members
-  for (let i = 0; (i < 10) && (i < cast.length); i++) {
+  for (let i = 0; i < 10 && i < cast.length; i++) {
     const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
@@ -121,7 +122,6 @@ function renderCastList(cast) {
 }
 
 function renderDetails(details) {
-
   const movieDetailEL = document.querySelector("#movieDetail");
   movieDetailEL.innerHTML = "";
 
@@ -130,10 +130,10 @@ function renderDetails(details) {
   if (details.title) {
     // render Movie details
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-    const ytPlayerCont = document.getElementById('youtubePlayer');
-    ytPlayerCont.classList.remove('display-none');
-    const streamingCont = document.getElementById('streamingContainer');
-    streamingCont.classList.remove('display-none');
+    const ytPlayerCont = document.getElementById("youtubePlayer");
+    ytPlayerCont.classList.remove("display-none");
+    const streamingCont = document.getElementById("streamingContainer");
+    streamingCont.classList.remove("display-none");
 
     // insert HTML creating Movie Detail elements
     htmlStr = `<h2>${details.title}</h2>
@@ -153,10 +153,10 @@ function renderDetails(details) {
     if (details.biography) {
       // render Person details
       // sets visibility of video and streaming options elements to none
-      const ytPlayerCont = document.getElementById('youtubePlayer');
-      ytPlayerCont.classList.add('display-none');
-      const streamingCont = document.getElementById('streamingContainer');
-      streamingCont.classList.add('display-none');
+      const ytPlayerCont = document.getElementById("youtubePlayer");
+      ytPlayerCont.classList.add("display-none");
+      const streamingCont = document.getElementById("streamingContainer");
+      streamingCont.classList.add("display-none");
 
       // insert HTML creating Person Detail elements
       htmlStr = `<h2>${details.name}</h2>
@@ -174,10 +174,10 @@ function renderDetails(details) {
     } else {
       // Render TV Show Details
       // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-      const ytPlayerCont = document.getElementById('youtubePlayer');
-      ytPlayerCont.classList.remove('display-none');
-      const streamingCont = document.getElementById('streamingContainer');
-      streamingCont.classList.remove('display-none');
+      const ytPlayerCont = document.getElementById("youtubePlayer");
+      ytPlayerCont.classList.remove("display-none");
+      const streamingCont = document.getElementById("streamingContainer");
+      streamingCont.classList.remove("display-none");
 
       // insert HTML creating TV Show Detail elements
       htmlStr = `<h2>${details.name}</h2>
@@ -224,7 +224,6 @@ async function fetchTmdbPersonDetail(personId) {
 
     landingPageEl.classList.add("display-none");
     resultDisplayEl.classList.remove("display-none");
-
   } catch (error) {
     console.error(error);
   }
