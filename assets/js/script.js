@@ -1,5 +1,6 @@
 // Global Variables
 let ytPlayer;
+const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
@@ -38,11 +39,60 @@ async function fetchYoutubeTrailer(userInput) {
 }
 //#endregion Youtube API
 
+// function to render the search history
+function renderSearchHistory() {
+  const searchHistoryEL = document.querySelector("#searchHistory");
+  searchHistoryEL.innerHTML = "";
+
+  for (let i = 0; i < historyArr.length; i++) {
+    const responseData = historyArr[i];
+    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
+      responseData.tmdbData.poster_path || responseData.tmdbData.profile_path
+    }"></li>`;
+
+    // Insert newest first
+    searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
+
+    // event listener for each history in the list
+    document.querySelector(`#history-${i}`).addEventListener("click", () => {
+      const selectedId = responseData.tmdbData.id;
+
+      if (responseData.userCategory === "movie") {
+        fetchTmdbMovieDetail(selectedId);
+      } else if (responseData.userCategory === "tv") {
+        fetchTmdbTvDetail(selectedId);
+      } else if (responseData.userCategory === "person") {
+        fetchTmdbPersonDetail(selectedId);
+      }
+    });
+  }
+}
+
 //#region TMDB API
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
-  /* Need to add a validation for the correct video in the array */
-  ytPlayer.cueVideoById(videosArr[0].key);
+  // Default to the 1st video in the array
+  let trailer = videosArr[0].key;
+
+  for (let i = 0; i < videosArr.length; i++) {
+    const video = videosArr[i];
+
+    // Check if video name have "trailer" and doesn't have "teaser" in it.
+    if (
+      video.name.toUpperCase().includes("TRAILER") &&
+      !video.name.toUpperCase().includes("TEASER")
+    ) {
+      trailer = video.key;
+      // If the video name have trailer and official in it, use it and break the loop
+      if (video.name.toUpperCase().includes("OFFICIAL")) {
+        trailer = video.key;
+        // Exit the for loop if a trailer was found
+        break;
+      }
+    }
+  }
+
+  ytPlayer.cueVideoById(trailer);
 }
 
 // Function to render the movie poster on the page
@@ -52,18 +102,27 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
+// Function to render the cast list and listen to click on their name to give more detail on them.
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
+  castListEl.innerHTML = "Cast: ";
 
+  // Display only 10 cast members
   for (let i = 0; i < 10; i++) {
-    const htmlStr = `<li><a>${cast[i].name} as ${cast[i].character}</a></li>`;
-
+    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
+
+    // Event listener to fetch the detail of the cast
+    document.querySelector(`#cast-${i}`).addEventListener("click", () => {
+      console.log(cast[i].name);
+      // fetchTmdbPersonDetail(cast[i].id);
+    });
   }
 }
 
 function renderMovieDetail(movieDetails) {
   const movieDetailEL = document.querySelector("#movieDetail");
+  movieDetailEL.innerHTML = "";
 
   // create if / else statement to handle different category data?
   const htmlStr = `<h2>${movieDetails.title}</h2>
@@ -103,7 +162,7 @@ async function fetchTmdbPersonDetail(personId) {
     // Function calls
     // loadTrailer(movieDetails.videos.results);   NO TRAILER FOR PEOPLE Consider replacing with external_id calls to link to IMDb, Facebook, Instagram, TikTok, Twitter, Wikidata, Youtube, etc.
     renderPoster(personDetails.profile_path);
-    renderMovieDetail(personDetails);  // again - can we use render Movie Detail or need to make new one? render PERSON detail?
+    renderMovieDetail(personDetails); // again - can we use render Movie Detail or need to make new one? render PERSON detail?
 
     landingPageEl.classList.add("display-none");
     resultDisplayEl.classList.remove("display-none");
@@ -171,9 +230,12 @@ function displayTop5(userCategory, results) {
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5; i++) {
+    // Result datas
     const name = results[i].name || results[i].original_title;
     const image = results[i].profile_path || results[i].poster_path;
     const date = results[i].release_date || results[i].first_air_date;
+
+    // Created Elements
     const thumbnail = document.createElement("li");
     const thumbContainer = document.createElement("div");
     thumbContainer.setAttribute("class", "card");
@@ -182,16 +244,13 @@ function displayTop5(userCategory, results) {
     const thumbRelease = document.createElement("p");
 
     thumbTitle.textContent = name;
-    thumbPoster.setAttribute(
-      "src",
-      "https://image.tmdb.org/t/p/w92" + image
-    );
-    
+    thumbPoster.setAttribute("src", "https://image.tmdb.org/t/p/w92" + image);
+
     if (date) {
       thumbRelease.textContent = "Release Date: " + date;
     } else {
       // or something else?  what do we want to do?
-      thumbRelease.setAttribute('display','none')
+      thumbRelease.setAttribute("display", "none");
     }
 
     thumbContainer.appendChild(thumbTitle);
@@ -207,12 +266,20 @@ function displayTop5(userCategory, results) {
       // Reset the modal list
       ulEl.innerHTML = "";
 
+      // Save the move to local storage
+      historyArr.push({ tmdbData: results[i], userCategory });
+      if (historyArr.length > 10) {
+        historyArr.shift();
+      }
+      localStorage.setItem("movie", JSON.stringify(historyArr));
+      renderSearchHistory();
+
       // fetch the movidDetail
-      if (userCategory === 'movie') {
+      if (userCategory === "movie") {
         fetchTmdbMovieDetail(selectedId);
-      } else if (userCategory === 'tv') {
+      } else if (userCategory === "tv") {
         fetchTmdbTvDetail(selectedId);
-      } else if (userCategory === 'person') {
+      } else if (userCategory === "person") {
         fetchTmdbPersonDetail(selectedId);
       }
     });
@@ -241,8 +308,11 @@ async function fetchTmdbId(userCategory, userInput) {
 addEventListener("DOMContentLoaded", () => {
   // DOM selections
   const searchFormEL = document.querySelector("#searchForm");
-  const searchSelectEl = document.querySelector('#mediaSelect');
+  const searchSelectEl = document.querySelector("#mediaSelect");
   const searchInputEl = document.querySelector("#searchInput");
+
+  // Render history list from localStorage
+  renderSearchHistory();
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
@@ -254,7 +324,9 @@ addEventListener("DOMContentLoaded", () => {
 
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
-      alert("Please enter a Search Category AND input a valid title or person name");
+      alert(
+        "Please enter a Search Category AND input a valid title or person name"
+      );
     }
     // Reset the form
     searchSelectEl.value = "";
