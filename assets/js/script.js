@@ -112,22 +112,29 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
-// Function to render the rating of the tv show on the page
+// Function to render the rating of Movie/Tv show
 function renderRating(ratings) {
   const ratingEl = document.querySelector("#rating");
 
   for (let i = 0; i < ratings.length; i++) {
     // Destructuring ratings object
-    const { rating, iso_3166_1 } = ratings[i];
+    let { rating, iso_3166_1, release_dates } = ratings[i];
 
     // Check for US rating
     if (iso_3166_1 === "US") {
+      // If rating doesn't exist, ie. this is a call from a movie selection
+      // Loop through the release_dates array for the rating
+      if (!rating) {
+        release_dates.forEach((obj) => {
+          rating = obj.certification;
+        });
+      }
+      // Render the rating on the page and quit the function
       ratingEl.textContent = rating;
-      // Quit the function after setting the rating
       return;
     }
   }
-  // No US rating found
+  // Default rating value if nothing was found
   ratingEl.textContent = "N/A";
 }
 
@@ -203,12 +210,16 @@ function renderDetails(details, userCategory) {
   // Append the detail onto the page
   selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-  // call render Cast List only if movie or tv search category
+  // call renderCastList and renderRating only if movie or tv search category
   if (userCategory !== "person") {
     renderCastList(details.credits.cast);
-  }
-  if (userCategory === "tv") {
-    renderRating(details.content_ratings.results);
+
+    // Get the right response data for the rating
+    const ratings =
+      userCategory === "movie"
+        ? details.release_dates.results
+        : details.content_ratings.results;
+    renderRating(ratings, userCategory);
   }
 }
 //#endregion Misc Functions
@@ -221,7 +232,7 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   const landingPageEl = document.querySelector("#landingPage");
 
   // Create an url for API call
-  const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids`;
+  const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
   try {
     const response = await fetch(url);
