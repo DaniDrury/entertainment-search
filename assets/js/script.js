@@ -110,6 +110,20 @@ function renderPoster(posterQueryParam) {
   ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
 }
 
+// Function to render the rating of the tv show on the page
+function renderRating(ratings) {
+  const ratingEl = document.querySelector("#rating");
+
+  for (let i = 0; i < ratings.length; i++) {
+    const { rating, iso_3166_1 } = ratings[i];
+
+    if (iso_3166_1 === "US") {
+      ratingEl.textContent = rating;
+      break;
+    }
+  }
+}
+
 // Function to render the cast list and listen to click on their name to give more detail on them.
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
@@ -129,13 +143,14 @@ function renderCastList(cast) {
 }
 
 function renderDetails(details, userCategory) {
-  const movieDetailEL = document.querySelector("#movieDetail");
+  const selectedDetailEL = document.querySelector("#selectedDetail");
   const playerAndStreamEl = document.querySelector("#playerAndStream");
+  // Reset the element
+  selectedDetailEL.innerHTML = "";
 
-  movieDetailEL.innerHTML = "";
-
-  let htmlStr = "";
   // render different details depending on search category (movie, tv or person)
+  let htmlStr = "";
+
   if (userCategory === "movie") {
     // render Movie details
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
@@ -149,22 +164,21 @@ function renderDetails(details, userCategory) {
         <p>${details.overview}</p>
       </div>
       <div id="additionalData">
-        <p>Director: <span id="director"></span></p>
         <p>Release Date: <span>${details.release_date}</span></p>
         <p>Rating: <span></span></p>
+        <p>Director: <span id="director"></span></p>
         <ul id="castList">Cast: </ul>
       </div>
     </div>`;
   }
 
   if (userCategory === "person") {
-    if (details.biography) {
-      // render Person details
-      // sets visibility of video and streaming options elements to none
-      playerAndStreamEl.classList.add("display-none");
+    // render Person details
+    // sets visibility of video and streaming options elements to none
+    playerAndStreamEl.classList.add("display-none");
 
-      // insert HTML creating Person Detail elements
-      htmlStr = `<h2>${details.name}</h2>
+    // insert HTML creating Person Detail elements
+    htmlStr = `<h2>${details.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="personSumContainer">
         <h3>Biography</h3>
@@ -176,34 +190,38 @@ function renderDetails(details, userCategory) {
         <ul id="credits">Other Credits: </ul>
       </div>
     </div>`;
-    }
-
-    if (userCategory === "tv") {
-      // Render TV Show Details
-      // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-      playerAndStreamEl.classList.remove("display-none");
-
-      // insert HTML creating TV Show Detail elements
-      htmlStr = `<h2>${details.name}</h2>
-      <div class="display-flex-column-maybe??">
-        <div id="plotSumContainer">
-          <h3>Plot Summary</h3>
-          <p>${details.overview}</p>
-        </div>
-        <div id="additionalData">
-          <p>Release Date: <span>${details.first_air_date}</span></p>
-          <p>Rating: <span id="rating">${details.content_ratings.results[1]}</span></p>
-          <ul id="castList">Cast: </ul>
-        </div>
-      </div>`;
-    }
   }
 
-  movieDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+  if (userCategory === "tv") {
+    // Render TV Show Details
+    // resets visibility of video & streaming options elements (if display set to none due to previous person search)
+    playerAndStreamEl.classList.remove("display-none");
 
-  // call render Cast List only if movie or tv search category (ie. details.credits exists)
-  if (details.credits) {
+    // insert HTML creating TV Show Detail elements
+    htmlStr = `<h2>${details.name}</h2>
+    <div class="display-flex-column-maybe??">
+      <div id="plotSumContainer">
+        <h3>Plot Summary</h3>
+        <p>${details.overview}</p>
+      </div>
+      <div id="additionalData">
+        <p>Release Date: <span>${details.first_air_date}</span></p>
+        <p>Rating: <span id="rating"></span></p>
+        <ul id="seasons">Seasons: </ul>
+        <ul id="castList">Cast: </ul>
+      </div>
+    </div>`;
+  }
+
+  // Append the detail onto the page
+  selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+
+  // call render Cast List only if movie or tv search category
+  if (userCategory !== "person") {
     renderCastList(details.credits.cast);
+  }
+  if (userCategory === "tv") {
+    renderRating(details.content_ratings.results);
   }
 }
 //#endregion Misc Functions
@@ -220,16 +238,16 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
 
   try {
     const response = await fetch(url);
-    const movieDetails = await response.json();
-    console.log(`${userCategory} details: `, movieDetails);
+    const selectedData = await response.json();
+    console.log(`${userCategory} details: `, selectedData);
 
     // Function calls
-    renderPoster(movieDetails.poster_path || movieDetails.profile_path);
-    renderDetails(movieDetails, userCategory);
+    renderPoster(selectedData.poster_path || selectedData.profile_path);
+    renderDetails(selectedData, userCategory);
 
     // Load a trailer video from youtube if the category isn't person
     if (userCategory !== "person") {
-      loadTrailer(movieDetails.videos.results);
+      loadTrailer(selectedData.videos.results);
     }
 
     landingPageEl.classList.add("display-none");
@@ -245,7 +263,7 @@ function displayTop5(results, userCategory) {
   ulEl.innerHTML = "";
 
   // create and append 5 possible matches to user query
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5 && i < results.length; i++) {
     // Result datas
     const name = results[i].name || results[i].original_title;
     const image = results[i].profile_path || results[i].poster_path;
