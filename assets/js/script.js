@@ -72,7 +72,7 @@ function renderSearchHistory() {
       const selectedId = historyData.tmdbData.id;
 
       //fetch selected detail
-      tmdbApiCall(selectedId, historyData.userCategory);
+      fetchTmdbSelectedDetail(selectedId, historyData.userCategory);
     });
   }
 }
@@ -128,19 +128,18 @@ function renderCastList(cast) {
   }
 }
 
-function renderDetails(details) {
+function renderDetails(details, userCategory) {
   const movieDetailEL = document.querySelector("#movieDetail");
+  const playerAndStreamEl = document.querySelector("#playerAndStream");
+
   movieDetailEL.innerHTML = "";
 
   let htmlStr = "";
   // render different details depending on search category (movie, tv or person)
-  if (details.title) {
+  if (userCategory === "movie") {
     // render Movie details
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-    const ytPlayerCont = document.getElementById("youtubePlayer");
-    ytPlayerCont.classList.remove("display-none");
-    const streamingCont = document.getElementById("streamingContainer");
-    streamingCont.classList.remove("display-none");
+    playerAndStreamEl.classList.remove("display-none");
 
     // insert HTML creating Movie Detail elements
     htmlStr = `<h2>${details.title}</h2>
@@ -156,14 +155,13 @@ function renderDetails(details) {
         <ul id="castList">Cast: </ul>
       </div>
     </div>`;
-  } else if (details.name) {
+  }
+
+  if (userCategory === "person") {
     if (details.biography) {
       // render Person details
       // sets visibility of video and streaming options elements to none
-      const ytPlayerCont = document.getElementById("youtubePlayer");
-      ytPlayerCont.classList.add("display-none");
-      const streamingCont = document.getElementById("streamingContainer");
-      streamingCont.classList.add("display-none");
+      playerAndStreamEl.classList.add("display-none");
 
       // insert HTML creating Person Detail elements
       htmlStr = `<h2>${details.name}</h2>
@@ -178,13 +176,12 @@ function renderDetails(details) {
         <ul id="credits">Other Credits: </ul>
       </div>
     </div>`;
-    } else {
+    }
+
+    if (userCategory === "tv") {
       // Render TV Show Details
       // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-      const ytPlayerCont = document.getElementById("youtubePlayer");
-      ytPlayerCont.classList.remove("display-none");
-      const streamingCont = document.getElementById("streamingContainer");
-      streamingCont.classList.remove("display-none");
+      playerAndStreamEl.classList.remove("display-none");
 
       // insert HTML creating TV Show Detail elements
       htmlStr = `<h2>${details.name}</h2>
@@ -212,92 +209,33 @@ function renderDetails(details) {
 //#endregion Misc Functions
 
 //#region TMDB API
-// Fetch person details
-async function fetchTmdbPersonDetail(personId) {
-  // DOM selectors
-  const resultDisplayEl = document.querySelector("#searchResultsContainer");
-  const landingPageEl = document.querySelector("#landingPage");
-
-  // Create an url for API call
-  const url = `https://api.themoviedb.org/3/person/${personId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=images,combined_credits,external_ids`;
-
-  try {
-    let response = await fetch(url);
-    let personDetails = await response.json();
-    console.log("Person details: ", personDetails);
-
-    // Function calls
-    // loadTrailer -- NO TRAILER FOR PEOPLE Consider replacing with external_id calls to link to IMDb, Facebook, Instagram, TikTok, Twitter, Wikidata, Youtube, etc.
-    renderPoster(personDetails.profile_path);
-    renderDetails(personDetails);
-
-    landingPageEl.classList.add("display-none");
-    resultDisplayEl.classList.remove("display-none");
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Fetch TV Show details
-async function fetchTmdbTvDetail(tvId) {
-  // DOM selectors
-  const resultDisplayEl = document.querySelector("#searchResultsContainer");
-  const landingPageEl = document.querySelector("#landingPage");
-
-  // Create an url for API call
-  const url = `https://api.themoviedb.org/3/tv/${tvId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews,content_ratings`;
-
-  try {
-    let response = await fetch(url);
-    let tvDetails = await response.json();
-    console.log("TV details: ", tvDetails);
-
-    // Function calls
-    loadTrailer(tvDetails.videos.results);
-    renderPoster(tvDetails.poster_path);
-    renderDetails(tvDetails);
-
-    landingPageEl.classList.add("display-none");
-    resultDisplayEl.classList.remove("display-none");
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
-async function fetchTmdbMovieDetail(movieId) {
+async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   // DOM selectors
   const resultDisplayEl = document.querySelector("#searchResultsContainer");
   const landingPageEl = document.querySelector("#landingPage");
 
   // Create an url for API call
-  const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,reviews,watch/provider`;
+  const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids`;
 
   try {
-    let response = await fetch(url);
-    let movieDetails = await response.json();
-    console.log("movie details: ", movieDetails);
+    const response = await fetch(url);
+    const movieDetails = await response.json();
+    console.log(`${userCategory} details: `, movieDetails);
 
     // Function calls
-    loadTrailer(movieDetails.videos.results);
-    renderPoster(movieDetails.poster_path);
-    renderDetails(movieDetails);
+    renderPoster(movieDetails.poster_path || movieDetails.profile_path);
+    renderDetails(movieDetails, userCategory);
+
+    // Load a trailer video from youtube if the category isn't person
+    if (userCategory !== "person") {
+      loadTrailer(movieDetails.videos.results);
+    }
 
     landingPageEl.classList.add("display-none");
     resultDisplayEl.classList.remove("display-none");
   } catch (error) {
     console.error(error);
-  }
-}
-
-// Function to do correct API call
-function tmdbApiCall(id, userCategory) {
-  if (userCategory === "movie") {
-    fetchTmdbMovieDetail(id);
-  } else if (userCategory === "tv") {
-    fetchTmdbTvDetail(id);
-  } else if (userCategory === "person") {
-    fetchTmdbPersonDetail(id);
   }
 }
 
@@ -347,7 +285,7 @@ function displayTop5(results, userCategory) {
       // Save the move to local storage
       saveResponse(results[i], userCategory);
       //fetch selected detail
-      tmdbApiCall(selectedId, userCategory);
+      fetchTmdbSelectedDetail(selectedId, userCategory);
     });
   }
 }
@@ -369,7 +307,7 @@ async function fetchTmdbId(userCategory, userInput) {
       // Save the move to local storage
       saveResponse(responseData.results[0], userCategory);
       //fetch selected detail
-      tmdbApiCall(responseData.results[0].id);
+      fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
     }
   } catch (error) {
     console.error(error);
