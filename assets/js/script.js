@@ -40,15 +40,28 @@ async function fetchYoutubeTrailer(userInput) {
 //#endregion Youtube API
 
 //#region Misc Functions
+// Save data to array and localStorage
+function saveResponse(tmdbData, userCategory) {
+  // Save the move to local storage
+  historyArr.push({ tmdbData, userCategory });
+  if (historyArr.length > 10) {
+    historyArr.shift();
+  }
+  localStorage.setItem("movie", JSON.stringify(historyArr));
+  renderSearchHistory();
+}
+
 // function to render the search history
 function renderSearchHistory() {
   const searchHistoryEL = document.querySelector("#searchHistory");
   searchHistoryEL.innerHTML = "";
 
   for (let i = 0; i < historyArr.length; i++) {
-    const responseData = historyArr[i];
+    // current saved data in the history array
+    const historyData = historyArr[i];
+
     const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
-      responseData.tmdbData.poster_path || responseData.tmdbData.profile_path
+      historyData.tmdbData.poster_path || historyData.tmdbData.profile_path
     }"></li>`;
 
     // Insert newest first
@@ -56,20 +69,14 @@ function renderSearchHistory() {
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      const selectedId = responseData.tmdbData.id;
+      const selectedId = historyData.tmdbData.id;
 
-      if (responseData.userCategory === "movie") {
-        fetchTmdbMovieDetail(selectedId);
-      } else if (responseData.userCategory === "tv") {
-        fetchTmdbTvDetail(selectedId);
-      } else if (responseData.userCategory === "person") {
-        fetchTmdbPersonDetail(selectedId);
-      }
+      //fetch selected detail
+      tmdbApiCall(selectedId, historyData.userCategory);
     });
   }
 }
-//#endregion Misc Functions
-//#region TMDB API
+
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
   // Default to the 1st video in the array
@@ -202,7 +209,9 @@ function renderDetails(details) {
     renderCastList(details.credits.cast);
   }
 }
+//#endregion Misc Functions
 
+//#region TMDB API
 // Fetch person details
 async function fetchTmdbPersonDetail(personId) {
   // DOM selectors
@@ -281,8 +290,19 @@ async function fetchTmdbMovieDetail(movieId) {
   }
 }
 
+// Function to do correct API call
+function tmdbApiCall(id, userCategory) {
+  if (userCategory === "movie") {
+    fetchTmdbMovieDetail(id);
+  } else if (userCategory === "tv") {
+    fetchTmdbTvDetail(id);
+  } else if (userCategory === "person") {
+    fetchTmdbPersonDetail(id);
+  }
+}
+
 // function to display top 5 results of search - allow user to select specific one
-function displayTop5(userCategory, results) {
+function displayTop5(results, userCategory) {
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
 
@@ -325,21 +345,9 @@ function displayTop5(userCategory, results) {
       ulEl.innerHTML = "";
 
       // Save the move to local storage
-      historyArr.push({ tmdbData: results[i], userCategory });
-      if (historyArr.length > 10) {
-        historyArr.shift();
-      }
-      localStorage.setItem("movie", JSON.stringify(historyArr));
-      renderSearchHistory();
-
-      // fetch the movidDetail
-      if (userCategory === "movie") {
-        fetchTmdbMovieDetail(selectedId);
-      } else if (userCategory === "tv") {
-        fetchTmdbTvDetail(selectedId);
-      } else if (userCategory === "person") {
-        fetchTmdbPersonDetail(selectedId);
-      }
+      saveResponse(results[i], userCategory);
+      //fetch selected detail
+      tmdbApiCall(selectedId, userCategory);
     });
   }
 }
@@ -356,24 +364,12 @@ async function fetchTmdbId(userCategory, userInput) {
 
     // Display top 5 results for user to select the right movie
     if (responseData.results.length > 1) {
-      displayTop5(userCategory, responseData.results);
+      displayTop5(responseData.results, userCategory);
     } else {
       // Save the move to local storage
-      historyArr.push({ tmdbData: responseData.results[0], userCategory });
-      if (historyArr.length > 10) {
-        historyArr.shift();
-      }
-      localStorage.setItem("movie", JSON.stringify(historyArr));
-      renderSearchHistory();
-
-      // fetch the movidDetail
-      if (userCategory === "movie") {
-        fetchTmdbMovieDetail(responseData.results[0].id);
-      } else if (userCategory === "tv") {
-        fetchTmdbTvDetail(responseData.results[0].id);
-      } else if (userCategory === "person") {
-        fetchTmdbPersonDetail(responseData.results[0].id);
-      }
+      saveResponse(responseData.results[0], userCategory);
+      //fetch selected detail
+      tmdbApiCall(responseData.results[0].id);
     }
   } catch (error) {
     console.error(error);
