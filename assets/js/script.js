@@ -91,6 +91,12 @@ function renderSearchHistory() {
 
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
+  // Check if a video response exist, hide the player and exit the function if not
+  if (videosArr.length === 0) {
+    document.getElementById("youtubePlayer").setAttribute("hidden", "");
+    return;
+  }
+
   // Default to the 1st video in the array
   let trailerKey = videosArr[0].key;
 
@@ -374,7 +380,7 @@ function addHistory(id, userCategory) {
   stateHistory.category = userCategory;
 
   // Add popstate history
-  window.history.pushState(stateHistory, "", "");
+  history.pushState(stateHistory, "", "");
   // console.log("pushState: ", stateHistory);
 
   // Fetch the selection detail if Id was pass into the function
@@ -470,7 +476,7 @@ addEventListener("DOMContentLoaded", () => {
   renderSearchHistory();
 
   // Start page history on load
-  window.history.pushState(stateHistory, "", "");
+  history.pushState(stateHistory, "", "");
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
@@ -504,20 +510,20 @@ addEventListener("load", () => {
 // Event listener on history state change
 addEventListener("popstate", () => {
   // debug log
-  // console.log("Back to: ", window.history.state);
+  // console.log("Back to: ", history.state);
 
   // Deconstruct history.state object
-  const { id, category } = window.history.state;
+  const { id, category } = history.state;
 
   // If went to the landing page, display the landing page
-  if (window.history.state.page === 1) {
+  if (history.state.page === 1) {
     landingPageEl.classList.remove("display-none");
     resultDisplayEl.classList.add("display-none");
 
     // If you went back pass the landing page go to the landing page
-  } else if (window.history.state.page < 1) {
+  } else if (history.state.page < 1) {
     setTimeout(() => {
-      window.history.forward();
+      history.forward();
     }, 20);
 
     // Fetch the selected data of current history page
