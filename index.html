@@ -1,108 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Entertainment Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+      integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/bootstrap-modal-only.css" />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Entertainment Search</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
-    integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css" />
-  <link rel="stylesheet" href="./assets/css/bootstrap-modal-only.css">
-  <link rel="stylesheet" href="./assets/css/style.css" />
-</head>
+  <body>
+    <main class="pure-g">
+      <aside class="pure-u-1 pure-u-md-1-4 pure-u-lg-1-5">
+        <div>
+          <h1>Entertainment Search</h1>
+          <form id="searchForm" class="pure-form pure-form-stacked">
+            <label for="mediaSelect">Which would you like to search?</label>
+            <select name="mediaType" id="mediaSelect">
+              <option value="">--Select an Option--</option>
+              <option value="movie">Movie</option>
+              <option value="tv">TV Show</option>
+              <option value="person">Person</option>
+            </select>
+            <label for="searchInput">Title or Person Name:</label>
+            <input type="text" id="searchInput" placeholder="Enter Name" />
+            <button
+              class="pure-button pure-button-primary"
+              id="searchBtn"
+              type="submit"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+        <!-- Display the search history -->
+        <div>
+          <p>Previous 6 Searches:</p>
+          <ul id="searchHistory" class="row"></ul>
+        </div>
 
-<body>
-  <main class="pure-g">
-    <aside class="pure-u-1 pure-u-md-1-4 pure-u-lg-1-5">
-      <div>
-        <h1>Entertainment Search</h1>
-        <form id="searchForm" class="pure-form pure-form-stacked">
-          <label for="mediaSelect">Which would you like to search?</label>
-          <select name="mediaType" id="mediaSelect">
-            <option value="">--Select an Option--</option>
-            <option value="movie">Movie</option>
-            <option value="tv">TV Show</option>
-            <option value="person">Person</option>
-          </select>
-          <label for="searchInput">Title or Person Name:</label>
-          <input type="text" id="searchInput" placeholder="Enter Name" />
-          <button class="pure-button pure-button-primary" id="searchBtn" type="submit">Search</button>
-        </form>
-      </div>
-      <!-- Display the search history -->
-      <div>
-        <p>Previous 6 Searches:</p>
-        <ul id="searchHistory" class="row"></ul>
-      </div>
+        <div id="logoContainer" class="pure-u-1-5 pure-u-md-2-3 pure-u-lg-1-2">
+          <h2>Powered By:</h2>
+          <img
+            class="pure-u-1"
+            src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+            alt="TMDB Logo"
+          />
+          <img
+            class="pure-u-1"
+            src="./assets/images/yt_logo_rgb_dark.png"
+            alt="YouTube Logo"
+          />
+        </div>
+      </aside>
 
-      <div id="logoContainer" class="pure-u-1-5 pure-u-md-2-3 pure-u-lg-1-2">
-        <h2>Powered By:</h2>
-        <img class="pure-u-1"
-          src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
-          alt="TMDB Logo" />
-        <img class="pure-u-1" src="./assets/images/yt_logo_rgb_dark.png" alt="YouTube Logo" />
-      </div>
-    </aside>
+      <!-- Landing Section -->
+      <section
+        id="landingPage"
+        class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4"
+      ></section>
 
-    <!-- Landing Section -->
-    <section id="landingPage" class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4"></section>
-
-    <!-- Result Section -->
-    <section id="searchResultsContainer" class="display-none display-flex-row pure-u-lg-3-4">
-      <!-- Poster and Bio -->
-      <section>
-        <div class="row">
-          <div id="posterContainer">
-            <img src="" alt="poster image" id="posterImg" />
+      <!-- Result Section -->
+      <section
+        id="searchResultsContainer"
+        class="display-none display-flex-row pure-u-lg-3-4"
+      >
+        <!-- Poster and Bio -->
+        <section>
+          <div class="row">
+            <div id="posterContainer">
+              <img src="" alt="poster image" id="posterImg" />
+            </div>
+            <article id="selectedDetail" class="display-flex-column"></article>
           </div>
-          <article id="selectedDetail" class="display-flex-column"></article>
-        </div>
-        <div class="row">
-
-        </div>
-      </section>
-      <!-- Trailer and streaming options -->
-      <section id="playerAndStream">
-        <div class="row">
-          <!-- This div will be changed to iframe -->
-          <div id="youtubePlayer"></div>
-          <div id="streamingContainer">
-            <h3>Streaming Options</h3>
-            <ul id="streamingList"></ul>
+          <div class="row"></div>
+        </section>
+        <!-- Trailer and streaming options -->
+        <section id="playerAndStream">
+          <div class="row">
+            <!-- This div will be changed to iframe -->
+            <div id="youtubePlayer"></div>
+            <div id="streamingContainer">
+              <h3>Streaming Options</h3>
+              <ul id="streamingList"></ul>
+            </div>
           </div>
-        </div>
+        </section>
       </section>
-    </section>
-  </main>
+    </main>
 
-  <!-- Pop-Up Modal for User to Select Specific Choice after Search -->
-  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Choose the Specific Movie or Show</h3>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <ul id="thumbList"></ul>
+    <!-- Pop-Up Modal for User to Select Specific Choice after Search -->
+    <div
+      class="modal fade"
+      id="staticBackdrop"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Choose the Specific Movie or Show</h3>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <ul id="thumbList"></ul>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <footer>
-    <p>&copy Character Coders 2023</p>
-  </footer>
+    <footer>
+      <p>&copy Character Coders 2023</p>
+    </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-    crossorigin="anonymous"></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="./assets/js/script.js"></script>
-</body>
-
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="./assets/js/script.js"></script>
+  </body>
 </html>
