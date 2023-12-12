@@ -1,13 +1,62 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: 'Sora', sans-serif;
+    height: 100%;
+    background-color: black;
+    color: white;
+}
+
+body {
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    /* border: 1px solid red; */
+}
+
+main {
+    min-width: 1600px;
+    max-width: 1920px;
+    /* border: 1px solid red; */
+    display: flex;
+    flex-flow: row wrap;
+}
+
+aside {
+    padding-left: 1rem;
+}
+
+h1 {
+    margin-bottom: 2rem;
+}
+
+form {
+    padding-bottom: 1rem;
+}
+
 ul {
     list-style: none;
 }
 
-img #logoContainer {
+ul li {
+    padding-right: 0.5rem;
+    
 }
 
-#logoContainer {
-    width: 25%;
+footer {
+    text-align: center;
+    font-weight: bold;
 }
+
+/* .button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+} */
 
 .display-none {
     display: none;
@@ -15,4 +64,43 @@ img #logoContainer {
 
 .row {
     display: flex;
+    flex-flow: row wrap;
+}
+
+.col {
+    display: flex;
+    flex-flow: column wrap;
+}
+
+#mediaSelect {
+    margin-bottom: 1rem;
+    width: 80%;
+}
+
+#searchInput {
+    margin-bottom: 1rem;
+    width: 80%;
+}
+
+#searchBtn {
+    width: 80%;
+}
+
+#logoContainer {
+    padding-top: 2rem;
+}
+
+#logoContainer img {
+    padding: 1rem 0 0 0;
+}
+
+#landingPage {
+    background-image: url("../images/collage-dark.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    padding-left: 2rem;
+}
+
+@media screen {
+    
 }
