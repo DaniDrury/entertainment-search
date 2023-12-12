@@ -5,7 +5,7 @@ const landingPageEl = document.querySelector("#landingPage");
 // Global Variables
 let ytPlayer;
 const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
-let stateHistory = { page: 0 };
+let page = 0;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
@@ -48,9 +48,9 @@ async function fetchYoutubeTrailer(userInput) {
 
 //#region Misc Functions
 // Save data to array and localStorage
-function saveSearchHistory(tmdbData, userCategory) {
+function saveSearchHistory(selectedData, userCategory) {
   // Save the move to local storage
-  historyArr.push({ tmdbData, userCategory });
+  historyArr.push({ selectedData, userCategory });
   if (historyArr.length > 6) {
     historyArr.shift();
   }
@@ -63,10 +63,12 @@ function renderSearchHistory() {
   const searchHistoryEL = document.querySelector("#searchHistory");
   searchHistoryEL.innerHTML = "";
 
+  console.log(historyArr);
+
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
-    const { tmdbData, userCategory } = historyArr[i];
-    const { poster_path, profile_path } = tmdbData;
+    const { selectedData, userCategory } = historyArr[i];
+    const { poster_path, profile_path } = selectedData;
 
     // Check if the image exist, if not render a placeholder
     let imgUrl =
@@ -82,10 +84,8 @@ function renderSearchHistory() {
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      const selectedId = tmdbData.id;
-
       //fetch selected detail
-      addHistory(selectedId, userCategory);
+      addHistory(selectedData, userCategory);
     });
   }
 }
@@ -200,8 +200,7 @@ function renderCredits(credits) {
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveSearchHistory(cast[i], media_type);
-      addHistory(id, media_type);
+      fetchTmdbSelectedDetail(id, media_type);
     });
   }
 
@@ -249,8 +248,7 @@ function renderCredits(credits) {
     document.getElementById(`crew-${id}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveSearchHistory(el, media_type);
-      addHistory(id, media_type);
+      fetchTmdbSelectedDetail(id, media_type);
     });
   });
 }
@@ -269,17 +267,36 @@ function renderCastList(cast) {
     document.querySelector(`#cast-${i}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveSearchHistory(cast[i], "person");
-      addHistory(cast[i].id, "person");
+      fetchTmdbSelectedDetail(cast[i].id, "person");
     });
   }
 }
 
-function renderDetails(details, userCategory) {
+// Main rendering function
+function renderDetails(selectedData, userCategory) {
+  // DOM selectors
   const selectedDetailEL = document.querySelector("#selectedDetail");
   const playerAndStreamEl = document.querySelector("#playerAndStream");
   // Reset the element
   selectedDetailEL.innerHTML = "";
+
+  // Destructure the selectedData object
+  const {
+    poster_path,
+    profile_path,
+    title,
+    name,
+    overview,
+    release_date,
+    first_air_date,
+    credits,
+    videos,
+    release_dates,
+    content_ratings,
+  } = selectedData;
+
+  // Render the profile/poster for user selected choice
+  renderPoster(poster_path || profile_path);
 
   // render different details depending on search category (movie, tv or person)
   // render Movie/TV details
@@ -288,16 +305,14 @@ function renderDetails(details, userCategory) {
     playerAndStreamEl.removeAttribute("hidden");
 
     // insert HTML creating Movie/TV Detail elements
-    const htmlStr = `<h2>${details.title || details.name}</h2>
+    const htmlStr = `<h2>${title || name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
         <h3>Plot Summary</h3>
-        <p>${details.overview}</p>
+        <p>${overview}</p>
       </div>
       <div id="additionalData">
-        <p>Release Date: <span>${
-          details.release_date || details.first_air_date
-        }</span></p>
+        <p>Release Date: <span>${release_date || first_air_date}</span></p>
         <p>Rating: <span id="rating"></span></p>
         <ul id="directorsOrSeasons"></ul>
         <ul id="castList">Cast: </ul>
@@ -307,14 +322,14 @@ function renderDetails(details, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCastList(details.credits.cast);
-    loadTrailer(details.videos.results);
+    renderCastList(credits.cast);
+    loadTrailer(videos.results);
 
     // Get the right response data for the rating
     const ratings =
       userCategory === "movie"
-        ? details.release_dates.results
-        : details.content_ratings.results;
+        ? release_dates.results
+        : content_ratings.results;
     renderRating(ratings, userCategory);
 
     // render Person details
@@ -323,15 +338,15 @@ function renderDetails(details, userCategory) {
     playerAndStreamEl.setAttribute("hidden", "");
 
     // insert HTML creating Person Detail elements
-    const htmlStr = `<h2>${details.name}</h2>
+    const htmlStr = `<h2>${selectedData.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="personSumContainer">
         <h3>Biography</h3>
-        <p>${details.biography}</p>
+        <p>${selectedData.biography}</p>
       </div>
       <div id="additionalData">
-        <p>Birthday: <span>${details.birthday}</span></p>
-        <p>Place of Birth: <span>${details.place_of_birth}</span></p>
+        <p>Birthday: <span>${selectedData.birthday}</span></p>
+        <p>Place of Birth: <span>${selectedData.place_of_birth}</span></p>
         <ul id="castList">Cast Credits: </ul>
         <ul id="crewList">Crew Credits: </ul>
       </div>
@@ -340,15 +355,39 @@ function renderDetails(details, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCredits(details.combined_credits);
+    renderCredits(selectedData.combined_credits);
   }
+
+  // Hide landing page and show result page
+  landingPageEl.setAttribute("hidden", "");
+  resultDisplayEl.removeAttribute("hidden");
 }
 
 //#endregion Misc Functions
 
 //#region TMDB API
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
+function addHistory(selectedData, userCategory) {
+  // Set the parameters for the page history to come back to
+  page++;
+  const stateHistory = {
+    page,
+    selectedData,
+    userCategory,
+  };
+
+  // Add popstate history
+  history.pushState(stateHistory, "", "");
+  console.log("pushState: ", stateHistory);
+
+  // Fetch the selection detail if Id was pass into the function
+  if (selectedData) {
+    renderDetails(selectedData, userCategory);
+  }
+}
+
 async function fetchTmdbSelectedDetail(selectedId, userCategory) {
+  console.log("Fetch selected data");
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
@@ -357,35 +396,17 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
     const selectedData = await response.json();
     console.log(`${userCategory} details: `, selectedData);
 
-    // Function calls
-    renderPoster(selectedData.poster_path || selectedData.profile_path);
-    renderDetails(selectedData, userCategory);
-
-    landingPageEl.setAttribute("hidden", "");
-    resultDisplayEl.removeAttribute("hidden");
+    // Save reponse data to localStorage and add to history
+    saveSearchHistory(selectedData, userCategory);
+    addHistory(selectedData, userCategory);
   } catch (error) {
     console.error(error);
   }
 }
 
-function addHistory(id, userCategory) {
-  // Set the parameters for the page history to come back to
-  stateHistory.page++;
-  stateHistory.id = id;
-  stateHistory.category = userCategory;
-
-  // Add popstate history
-  history.pushState(stateHistory, "", "");
-  // console.log("pushState: ", stateHistory);
-
-  // Fetch the selection detail if Id was pass into the function
-  if (id) {
-    fetchTmdbSelectedDetail(id, userCategory);
-  }
-}
-
 // function to display top 5 results of search - allow user to select specific one
 function displayTop5(results, userCategory) {
+  // DOM selectors
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
 
@@ -406,6 +427,7 @@ function displayTop5(results, userCategory) {
     const imageUrl = profile_path || poster_path;
     const date = release_date || first_air_date || "N/A";
 
+    // Create the html string to append to the Ul element
     const top5Str = `<li id="thumbnail-${i}">
       <div class="card">
         <h3>${nameData}</h3>
@@ -413,7 +435,7 @@ function displayTop5(results, userCategory) {
         <p>Release Date: ${date}</p>
       </div>
     </li>`;
-
+    // Append the html string to the end of the Ul element
     ulEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
@@ -422,14 +444,14 @@ function displayTop5(results, userCategory) {
       // Reset the modal list
       ulEl.innerHTML = "";
 
-      // Save the move to local storage
       //fetch selected detail
-      saveSearchHistory(results[i], userCategory);
-      addHistory(selectedId, userCategory);
+      fetchTmdbSelectedDetail(selectedId, userCategory);
 
+      // Hide the modal after user picked a movie from 5 results
       myModal.hide();
     });
   }
+  // Display the modal to the user
   myModal.show();
 }
 
@@ -446,11 +468,11 @@ async function fetchTmdbId(userCategory, userInput) {
     // Display top 5 results for user to select the right movie
     if (responseData.results.length > 1) {
       displayTop5(responseData.results, userCategory);
+
+      // If there's only one result
     } else {
-      // Save the move to local storage
       //fetch selected detail
-      saveSearchHistory(responseData.results[0], userCategory);
-      addHistory(responseData.results[0].id, userCategory);
+      fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
     }
   } catch (error) {
     console.error(error);
@@ -458,6 +480,7 @@ async function fetchTmdbId(userCategory, userInput) {
 }
 //#endregion TMDB API
 
+//#region Inits
 // Init on DOM ready
 addEventListener("DOMContentLoaded", () => {
   // DOM selections
@@ -471,7 +494,10 @@ addEventListener("DOMContentLoaded", () => {
   renderSearchHistory();
 
   // Start page history on load
-  history.pushState(stateHistory, "", "");
+  // 2 history states for landind page to be use in conditional
+  history.pushState({ page }, "", "");
+  addHistory();
+  // console.log("pushState: ", stateHistory);
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
@@ -499,9 +525,9 @@ addEventListener("DOMContentLoaded", () => {
 
 // Init onLoad
 addEventListener("load", () => {
-  // Load the youtube player and mark the start of history
+  // Load the youtube player
   renderYouTubePlayer();
-  addHistory();
+
   // history doesn't remember scoll location
   history.scrollRestoration = "manual";
 });
@@ -509,17 +535,17 @@ addEventListener("load", () => {
 // Event listener on history state change
 addEventListener("popstate", () => {
   // debug log
-  // console.log("Back to: ", history.state);
+  console.log("Back to: ", history.state);
 
   // Deconstruct history.state object
-  const { id, category } = history.state;
+  const { selectedData, userCategory } = history.state;
 
   // If went to the landing page, display the landing page
   if (history.state.page === 1) {
     landingPageEl.removeAttribute("hidden");
     resultDisplayEl.setAttribute("hidden", "");
 
-    // If you went back pass the landing page go to the landing page
+    // If you went back passed the 2nd state for landing page go forward
   } else if (history.state.page < 1) {
     setTimeout(() => {
       history.forward();
@@ -527,6 +553,7 @@ addEventListener("popstate", () => {
 
     // Fetch the selected data of current history page
   } else {
-    fetchTmdbSelectedDetail(id, category);
+    renderDetails(selectedData, userCategory);
   }
 });
+//#endregion Inits
