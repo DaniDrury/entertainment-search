@@ -48,7 +48,7 @@ async function fetchYoutubeTrailer(userInput) {
 
 //#region Misc Functions
 // Save data to array and localStorage
-function saveResponse(tmdbData, userCategory) {
+function saveSearchHistory(tmdbData, userCategory) {
   // Save the move to local storage
   historyArr.push({ tmdbData, userCategory });
   if (historyArr.length > 6) {
@@ -168,10 +168,10 @@ function renderCredits(credits) {
 
   // hiding either cast or crew UL element if no associated responses
   if (cast.length === 0) {
-    castUl.classList.add("display-none");
+    castUl.setAttribute("hidden", "");
   }
   if (crew.length === 0) {
-    crewUl.classList.add("display-none");
+    crewUl.setAttribute("hidden", "");
   }
 
   // limiting responses to 10
@@ -200,7 +200,7 @@ function renderCredits(credits) {
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveResponse(cast[i], media_type);
+      saveSearchHistory(cast[i], media_type);
       addHistory(id, media_type);
     });
   }
@@ -249,7 +249,7 @@ function renderCredits(credits) {
     document.getElementById(`crew-${id}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveResponse(el, media_type);
+      saveSearchHistory(el, media_type);
       addHistory(id, media_type);
     });
   });
@@ -269,7 +269,7 @@ function renderCastList(cast) {
     document.querySelector(`#cast-${i}`).addEventListener("click", () => {
       // Save the move to local storage
       //fetch selected detail
-      saveResponse(cast[i], "person");
+      saveSearchHistory(cast[i], "person");
       addHistory(cast[i].id, "person");
     });
   }
@@ -282,15 +282,13 @@ function renderDetails(details, userCategory) {
   selectedDetailEL.innerHTML = "";
 
   // render different details depending on search category (movie, tv or person)
-  let htmlStr = "";
-
   // render Movie/TV details
   if (userCategory !== "person") {
     // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-    playerAndStreamEl.classList.remove("display-none");
+    playerAndStreamEl.removeAttribute("hidden");
 
     // insert HTML creating Movie/TV Detail elements
-    htmlStr = `<h2>${details.title || details.name}</h2>
+    const htmlStr = `<h2>${details.title || details.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
         <h3>Plot Summary</h3>
@@ -306,13 +304,26 @@ function renderDetails(details, userCategory) {
       </div>
     </div>`;
 
+    // Append the detail onto the page
+    selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+
+    renderCastList(details.credits.cast);
+    loadTrailer(details.videos.results);
+
+    // Get the right response data for the rating
+    const ratings =
+      userCategory === "movie"
+        ? details.release_dates.results
+        : details.content_ratings.results;
+    renderRating(ratings, userCategory);
+
     // render Person details
   } else {
     // sets visibility of video and streaming options elements to none
-    playerAndStreamEl.classList.add("display-none");
+    playerAndStreamEl.setAttribute("hidden", "");
 
     // insert HTML creating Person Detail elements
-    htmlStr = `<h2>${details.name}</h2>
+    const htmlStr = `<h2>${details.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="personSumContainer">
         <h3>Biography</h3>
@@ -325,22 +336,10 @@ function renderDetails(details, userCategory) {
         <ul id="crewList">Crew Credits: </ul>
       </div>
     </div>`;
-  }
 
-  // Append the detail onto the page
-  selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
+    // Append the detail onto the page
+    selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-  // call renderCastList and renderRating only if movie or tv search category
-  if (userCategory !== "person") {
-    renderCastList(details.credits.cast);
-
-    // Get the right response data for the rating
-    const ratings =
-      userCategory === "movie"
-        ? details.release_dates.results
-        : details.content_ratings.results;
-    renderRating(ratings, userCategory);
-  } else {
     renderCredits(details.combined_credits);
   }
 }
@@ -362,13 +361,8 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
     renderPoster(selectedData.poster_path || selectedData.profile_path);
     renderDetails(selectedData, userCategory);
 
-    // Load a trailer video from youtube if the category isn't person
-    if (userCategory !== "person") {
-      loadTrailer(selectedData.videos.results);
-    }
-
-    landingPageEl.classList.add("display-none");
-    resultDisplayEl.classList.remove("display-none");
+    landingPageEl.setAttribute("hidden", "");
+    resultDisplayEl.removeAttribute("hidden");
   } catch (error) {
     console.error(error);
   }
@@ -430,7 +424,7 @@ function displayTop5(results, userCategory) {
 
       // Save the move to local storage
       //fetch selected detail
-      saveResponse(results[i], userCategory);
+      saveSearchHistory(results[i], userCategory);
       addHistory(selectedId, userCategory);
 
       myModal.hide();
@@ -455,7 +449,7 @@ async function fetchTmdbId(userCategory, userInput) {
     } else {
       // Save the move to local storage
       //fetch selected detail
-      saveResponse(responseData.results[0], userCategory);
+      saveSearchHistory(responseData.results[0], userCategory);
       addHistory(responseData.results[0].id, userCategory);
     }
   } catch (error) {
@@ -522,8 +516,8 @@ addEventListener("popstate", () => {
 
   // If went to the landing page, display the landing page
   if (history.state.page === 1) {
-    landingPageEl.classList.remove("display-none");
-    resultDisplayEl.classList.add("display-none");
+    landingPageEl.removeAttribute("hidden");
+    resultDisplayEl.setAttribute("hidden", "");
 
     // If you went back pass the landing page go to the landing page
   } else if (history.state.page < 1) {
