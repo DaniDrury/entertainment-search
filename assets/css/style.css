@@ -1,10 +1,18 @@
-:root {
+* {
     box-sizing: border-box;
 }
 
 html {
+    height: 100%;
     background-color: black;
     color: white;
+}
+
+main {
+    background-image: url("../images/collage-dark.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
 }
 
 h1 {
@@ -19,11 +27,15 @@ ul {
     list-style: none;
 }
 
+footer {
+    text-align: center;
+    font-weight: bold;
+}
+
 img #logoContainer {
 }
 
 #landingPage {
-    border: 1px solid red;
     padding-left: 2rem;
 }
 
@@ -37,4 +49,5 @@ img #logoContainer {
 
 .row {
     display: flex;
+    flex-flow: row wrap;
 }

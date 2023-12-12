@@ -14,10 +14,10 @@
       <h1>Entertainment Search</h1>
     </header>
     <main class="pure-g">
-      <aside class="pure-u-1 pure-u-md-1-3 pure-u-lg-1-4">
+      <aside class="pure-u-1 pure-u-md-1-4 pure-u-lg-1-5">
         <div>
           <h2>Search a Title or Person!</h2>
-          <form id="searchForm">
+          <form id="searchForm" class="pure-form-stacked">
             <label for="mediaSelect">Which would you like to search?</label>
             <select name="mediaType" id="mediaSelect">
               <option value="">--Select an Option--</option>
@@ -26,8 +26,8 @@
               <option value="person">Person</option>
             </select>
             <label for="searchInput">Title or Person Name:</label>
-            <input type="text" id="searchInput" placeholder="Enter Title" />
-            <button id="searchBtn" type="submit">Search</button>
+            <input type="text" id="searchInput" placeholder="Enter Name" />
+            <button class="pure-button pure-button-active" id="searchBtn" type="submit">Search</button>
           </form>
         </div>
         <!-- Display the search history -->
@@ -36,7 +36,7 @@
           <ul id="searchHistory" class="row"></ul>
         </div>
 
-        <div id="logoContainer">
+        <div id="logoContainer" class="pure-u-lg-">
           <h2>Powered By:</h2>
           <img
           class="pure-u-1"  
@@ -52,24 +52,28 @@
       </aside>
       
       <!-- Landing Section -->
-      <section id="landingPage" class="pure-u-1 pure-u-md-2-3 pure-u-lg-5-7">
-        <img
+      <section id="landingPage" class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4">
+        <!-- <img 
+          class="pure-img"
           src="./assets/images/collage-dark.png"
           alt="collage of movie posters"
-        />
+        /> -->
       </section>
       <!-- Result Section -->
       <section
         id="searchResultsContainer"
-        class="display-none display-flex-row"
+        class="display-none display-flex-row pure-u-lg-3-4"
       >
         <!-- Poster and Bio -->
-        <section>
-          <div class="row">
-            <div id="posterContainer">
+        <section >
+          <div class="row">  
+          <div id="posterContainer">
               <img src="" alt="poster image" id="posterImg" />
             </div>
             <article id="selectedDetail" class="display-flex-column"></article>
+          </div>
+          <div class="row">
+
           </div>
         </section>
         <!-- Trailer and streaming options -->
