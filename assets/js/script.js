@@ -1,3 +1,7 @@
+// DOM selectors
+const resultDisplayEl = document.querySelector("#searchResultsContainer");
+const landingPageEl = document.querySelector("#landingPage");
+
 // Global Variables
 let ytPlayer;
 let stateHistory = { page: 0 };
@@ -5,18 +9,17 @@ const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
-function renderYouTubePlayer(id) {
+function renderYouTubePlayer() {
   ytPlayer = new YT.Player("youtubePlayer", {
     height: "390",
     width: "640",
-    videoId: id,
+    videoId: "",
     playerVars: {
       playsinline: 1,
     },
     events: {
       onReady: () => {
         console.log("YouTube player loaded");
-        ytPlayer.cueVideoById(id);
       },
       // 'onStateChange': onPlayerStateChange
     },
@@ -47,7 +50,7 @@ async function fetchYoutubeTrailer(userInput) {
 function saveResponse(tmdbData, userCategory) {
   // Save the move to local storage
   historyArr.push({ tmdbData, userCategory });
-  if (historyArr.length > 10) {
+  if (historyArr.length > 6) {
     historyArr.shift();
   }
   localStorage.setItem("movie", JSON.stringify(historyArr));
@@ -61,21 +64,27 @@ function renderSearchHistory() {
 
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
-    const historyData = historyArr[i];
+    const { tmdbData, userCategory } = historyArr[i];
+    const { poster_path, profile_path } = tmdbData;
 
-    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${
-      historyData.tmdbData.poster_path || historyData.tmdbData.profile_path
-    }"></li>`;
+    // Check if the image exist, if not render a placeholder
+    let imgUrl =
+      poster_path || profile_path
+        ? `https://image.tmdb.org/t/p/w92${poster_path || profile_path}`
+        : "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg";
+
+    // Create the Li element with nested img
+    const htmlStr = `<li id="history-${i}"><img src="${imgUrl}"></li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      const selectedId = historyData.tmdbData.id;
+      const selectedId = tmdbData.id;
 
       //fetch selected detail
-      pageHistory(selectedId, historyData.userCategory);
+      addHistory(selectedId, userCategory);
     });
   }
 }
@@ -105,14 +114,15 @@ function loadTrailer(videosArr) {
   }
 
   // Cue up the trailer video in the YouTube player
-  renderYouTubePlayer(trailerKey);
+  ytPlayer.cueVideoById(trailerKey);
 }
 
 // Function to render the movie poster on the page
 function renderPoster(posterQueryParam) {
-  document.querySelector(
-    "#posterImg"
-  ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
+  // Check if the image exist, if not render a placeholder
+  document.querySelector("#posterImg").src = posterQueryParam
+    ? `https://image.tmdb.org/t/p/w780${posterQueryParam}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 }
 
 // Function to render the rating of Movie/Tv show
@@ -181,7 +191,10 @@ function renderCredits(credits) {
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
-      pageHistory(id, media_type);
+      // Save the move to local storage
+      //fetch selected detail
+      saveResponse(cast[i], media_type);
+      addHistory(id, media_type);
     });
   }
 
@@ -227,7 +240,10 @@ function renderCredits(credits) {
     crewUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`crew-${id}`).addEventListener("click", () => {
-      pageHistory(id, media_type);
+      // Save the move to local storage
+      //fetch selected detail
+      saveResponse(el, media_type);
+      addHistory(id, media_type);
     });
   });
 }
@@ -244,7 +260,10 @@ function renderCastList(cast) {
 
     // Event listener to fetch the detail of the cast
     document.querySelector(`#cast-${i}`).addEventListener("click", () => {
-      pageHistory(cast[i].id, "person");
+      // Save the move to local storage
+      //fetch selected detail
+      saveResponse(cast[i], "person");
+      addHistory(cast[i].id, "person");
     });
   }
 }
@@ -324,10 +343,6 @@ function renderDetails(details, userCategory) {
 //#region TMDB API
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbSelectedDetail(selectedId, userCategory) {
-  // DOM selectors
-  const resultDisplayEl = document.querySelector("#searchResultsContainer");
-  const landingPageEl = document.querySelector("#landingPage");
-
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
@@ -352,7 +367,7 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   }
 }
 
-function pageHistory(id, userCategory) {
+function addHistory(id, userCategory) {
   // Set the parameters for the page history to come back to
   stateHistory.page++;
   stateHistory.id = id;
@@ -360,10 +375,12 @@ function pageHistory(id, userCategory) {
 
   // Add popstate history
   window.history.pushState(stateHistory, "", "");
-  console.log("pushState: ", stateHistory);
+  // console.log("pushState: ", stateHistory);
 
-  // Fetch the selection detail
-  fetchTmdbSelectedDetail(id, userCategory);
+  // Fetch the selection detail if Id was pass into the function
+  if (id) {
+    fetchTmdbSelectedDetail(id, userCategory);
+  }
 }
 
 // function to display top 5 results of search - allow user to select specific one
@@ -410,9 +427,9 @@ function displayTop5(results, userCategory) {
       ulEl.innerHTML = "";
 
       // Save the move to local storage
-      saveResponse(results[i], userCategory);
       //fetch selected detail
-      pageHistory(selectedId, userCategory);
+      saveResponse(results[i], userCategory);
+      addHistory(selectedId, userCategory);
     });
   }
 }
@@ -432,9 +449,9 @@ async function fetchTmdbId(userCategory, userInput) {
       displayTop5(responseData.results, userCategory);
     } else {
       // Save the move to local storage
-      saveResponse(responseData.results[0], userCategory);
       //fetch selected detail
-      pageHistory(responseData.results[0].id, userCategory);
+      saveResponse(responseData.results[0], userCategory);
+      addHistory(responseData.results[0].id, userCategory);
     }
   } catch (error) {
     console.error(error);
@@ -478,21 +495,33 @@ addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Load the youtube player and mark the start of history
+addEventListener("load", () => {
+  renderYouTubePlayer();
+  addHistory();
+});
+
 // Event listener on history state change
 addEventListener("popstate", () => {
   // debug log
-  console.log("Back to: ", window.history.state);
-  console.log(window.history);
+  // console.log("Back to: ", window.history.state);
 
   // Deconstruct history.state object
   const { id, category } = window.history.state;
 
-  // if page is 0, then it's the starting page
-  if (window.history.state.page === 0) {
-    document.querySelector("#landingPage").classList.remove("display-none");
+  // If went to the landing page, display the landing page
+  if (window.history.state.page === 1) {
+    landingPageEl.classList.remove("display-none");
+    resultDisplayEl.classList.add("display-none");
+
+    // If you went back pass the landing page go to the landing page
+  } else if (window.history.state.page < 1) {
+    setTimeout(() => {
+      window.history.forward();
+    }, 20);
+
+    // Fetch the selected data of current history page
   } else {
     fetchTmdbSelectedDetail(id, category);
   }
 });
-
-console.log(window.history);
