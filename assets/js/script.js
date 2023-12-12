@@ -1,11 +1,10 @@
 // DOM selectors
 const resultDisplayEl = document.querySelector("#searchResultsContainer");
 const landingPageEl = document.querySelector("#landingPage");
+const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
 
 // Global Variables
 let ytPlayer;
-const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
-let page = 0;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
@@ -369,9 +368,8 @@ function renderDetails(selectedData, userCategory) {
 // Function to fetch the movie detail using the movieId that was retrieved from TMDB
 function addHistory(selectedData, userCategory) {
   // Set the parameters for the page history to come back to
-  page++;
   const stateHistory = {
-    page,
+    page: history.state.page + 1,
     selectedData,
     userCategory,
   };
@@ -495,9 +493,8 @@ addEventListener("DOMContentLoaded", () => {
 
   // Start page history on load
   // 2 history states for landind page to be use in conditional
-  history.pushState({ page }, "", "");
+  history.pushState({ page: 0 }, "", "");
   addHistory();
-  // console.log("pushState: ", stateHistory);
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
