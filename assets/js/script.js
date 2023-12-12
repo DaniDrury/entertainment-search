@@ -4,6 +4,7 @@ const landingPageEl = document.querySelector("#landingPage");
 
 // Global Variables
 let ytPlayer;
+const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
 let stateHistory = { page: 0 };
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
@@ -396,38 +397,33 @@ function displayTop5(results, userCategory) {
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5 && i < results.length; i++) {
+    // Deconstruct result object
+    const {
+      name,
+      original_title,
+      profile_path,
+      poster_path,
+      release_date,
+      first_air_date,
+    } = results[i];
+
     // Result datas
-    const name = results[i].name || results[i].original_title;
-    const image = results[i].profile_path || results[i].poster_path;
-    const date = results[i].release_date || results[i].first_air_date;
+    const nameData = name || original_title;
+    const imageUrl = profile_path || poster_path;
+    const date = release_date || first_air_date || "N/A";
 
-    // Created Elements
-    const thumbnail = document.createElement("li");
-    const thumbContainer = document.createElement("div");
-    thumbContainer.setAttribute("class", "card");
-    const thumbTitle = document.createElement("h3");
-    const thumbPoster = document.createElement("img");
-    const thumbRelease = document.createElement("p");
+    const top5Str = `<li id="thumbnail-${i}">
+      <div class="card">
+        <h3>${nameData}</h3>
+        <img src="https://image.tmdb.org/t/p/w92${imageUrl}">
+        <p>Release Date: ${date}</p>
+      </div>
+    </li>`;
 
-    thumbTitle.textContent = name;
-    thumbPoster.setAttribute("src", "https://image.tmdb.org/t/p/w92" + image);
-
-    if (date) {
-      thumbRelease.textContent = "Release Date: " + date;
-    } else {
-      // or something else?  what do we want to do?
-      thumbRelease.setAttribute("display", "none");
-    }
-
-    thumbContainer.appendChild(thumbTitle);
-    thumbContainer.appendChild(thumbPoster);
-    thumbContainer.appendChild(thumbRelease);
-    thumbnail.appendChild(thumbContainer);
-
-    ulEl.appendChild(thumbnail);
+    ulEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-    thumbnail.addEventListener("click", (ev) => {
+    document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
       let selectedId = results[i].id;
       // Reset the modal list
       ulEl.innerHTML = "";
@@ -436,8 +432,11 @@ function displayTop5(results, userCategory) {
       //fetch selected detail
       saveResponse(results[i], userCategory);
       addHistory(selectedId, userCategory);
+
+      myModal.hide();
     });
   }
+  myModal.show();
 }
 
 // Function to fetch the movieId using the search string from the user
