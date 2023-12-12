@@ -403,13 +403,13 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
 }
 
 // function to display top 5 results of search - allow user to select specific one
-function displayTop5(results, userCategory) {
+function displayTop5(results, userCategory, index = 0) {
   // DOM selectors
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
 
   // create and append 5 possible matches to user query
-  for (let i = 0; i < 5 && i < results.length; i++) {
+  for (index; index < 5 && index < results.length; index++) {
     // Deconstruct result object
     const {
       name,
@@ -418,7 +418,7 @@ function displayTop5(results, userCategory) {
       poster_path,
       release_date,
       first_air_date,
-    } = results[i];
+    } = results[index];
 
     // Result datas
     const nameData = name || original_title;
@@ -426,7 +426,7 @@ function displayTop5(results, userCategory) {
     const date = release_date || first_air_date || "N/A";
 
     // Create the html string to append to the Ul element
-    const top5Str = `<li id="thumbnail-${i}">
+    const top5Str = `<li id="thumbnail-${index}">
       <div class="card">
         <h3>${nameData}</h3>
         <img src="https://image.tmdb.org/t/p/w92${imageUrl}">
@@ -437,17 +437,19 @@ function displayTop5(results, userCategory) {
     ulEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-    document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
-      let selectedId = results[i].id;
-      // Reset the modal list
-      ulEl.innerHTML = "";
+    document
+      .querySelector(`#thumbnail-${index}`)
+      .addEventListener("click", () => {
+        let selectedId = results[index].id;
+        // Reset the modal list
+        ulEl.innerHTML = "";
 
-      //fetch selected detail
-      fetchTmdbSelectedDetail(selectedId, userCategory);
+        //fetch selected detail
+        fetchTmdbSelectedDetail(selectedId, userCategory);
 
-      // Hide the modal after user picked a movie from 5 results
-      myModal.hide();
-    });
+        // Hide the modal after user picked a movie from 5 results
+        myModal.hide();
+      });
   }
   // Display the modal to the user
   myModal.show();
@@ -504,16 +506,18 @@ addEventListener("DOMContentLoaded", () => {
     const userCategory = searchSelectEl.value;
     const userInput = searchInputEl.value.trim();
 
+    // Reset the form
+    searchSelectEl.value = "";
+    searchInputEl.value = "";
+
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND input a valid <strong>title</strong> or <strong>person name</strong>";
       myModal.show();
+      return;
     }
-    // Reset the form
-    searchSelectEl.value = "";
-    searchInputEl.value = "";
 
     // fetchYoutubeTrailer(userInput);
     fetchTmdbId(userCategory, userInput);
