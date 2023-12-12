@@ -1,5 +1,6 @@
 // Global Variables
 let ytPlayer;
+let stateHistory = { page: 0 };
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
@@ -73,7 +74,7 @@ function renderSearchHistory() {
       const selectedId = historyData.tmdbData.id;
 
       //fetch selected detail
-      fetchTmdbSelectedDetail(selectedId, historyData.userCategory);
+      pageHistory(selectedId, historyData.userCategory);
     });
   }
 }
@@ -179,7 +180,7 @@ function renderCredits(credits) {
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
-      fetchTmdbSelectedDetail(id, media_type);
+      pageHistory(id, media_type);
     });
   }
 
@@ -212,8 +213,6 @@ function renderCredits(credits) {
   }
 
   // deconstruct crewArray objects and create li items for each
-  console.log(crewArray);
-
   crewArray.forEach((el) => {
     const { job, title, release_date, id, media_type, poster_path } = el;
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
@@ -227,7 +226,7 @@ function renderCredits(credits) {
     crewUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`crew-${id}`).addEventListener("click", () => {
-      fetchTmdbSelectedDetail(id, media_type);
+      pageHistory(id, media_type);
     });
   });
 }
@@ -244,7 +243,7 @@ function renderCastList(cast) {
 
     // Event listener to fetch the detail of the cast
     document.querySelector(`#cast-${i}`).addEventListener("click", () => {
-      fetchTmdbSelectedDetail(cast[i].id, "person");
+      pageHistory(cast[i].id, "person");
     });
   }
 }
@@ -352,6 +351,20 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   }
 }
 
+function pageHistory(id, userCategory) {
+  // Set the parameters for the page history to come back to
+  stateHistory.page++;
+  stateHistory.id = id;
+  stateHistory.category = userCategory;
+
+  // Add popstate history
+  window.history.pushState(stateHistory, "", "");
+  console.log("pushState: ", stateHistory);
+
+  // Fetch the selection detail
+  fetchTmdbSelectedDetail(id, userCategory);
+}
+
 // function to display top 5 results of search - allow user to select specific one
 function displayTop5(results, userCategory) {
   const ulEl = document.getElementById("thumbList");
@@ -398,7 +411,7 @@ function displayTop5(results, userCategory) {
       // Save the move to local storage
       saveResponse(results[i], userCategory);
       //fetch selected detail
-      fetchTmdbSelectedDetail(selectedId, userCategory);
+      pageHistory(selectedId, userCategory);
     });
   }
 }
@@ -420,7 +433,7 @@ async function fetchTmdbId(userCategory, userInput) {
       // Save the move to local storage
       saveResponse(responseData.results[0], userCategory);
       //fetch selected detail
-      fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
+      pageHistory(responseData.results[0].id, userCategory);
     }
   } catch (error) {
     console.error(error);
@@ -437,6 +450,9 @@ addEventListener("DOMContentLoaded", () => {
 
   // Render history list from localStorage
   renderSearchHistory();
+
+  // Start page history on load
+  window.history.pushState(stateHistory, "", "");
 
   // Event listener for the search form's submit event
   searchFormEL.addEventListener("submit", (evt) => {
@@ -460,3 +476,22 @@ addEventListener("DOMContentLoaded", () => {
     fetchTmdbId(userCategory, userInput);
   });
 });
+
+// Event listener on history state change
+addEventListener("popstate", () => {
+  // debug log
+  console.log("Back to: ", window.history.state);
+  console.log(window.history);
+
+  // Deconstruct history.state object
+  const { id, category } = window.history.state;
+
+  // if page is 0, then it's the starting page
+  if (window.history.state.page === 0) {
+    document.querySelector("#landingPage").classList.remove("display-none");
+  } else {
+    fetchTmdbSelectedDetail(id, category);
+  }
+});
+
+console.log(window.history);
