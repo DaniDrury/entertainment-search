@@ -16,6 +16,7 @@ function renderYouTubePlayer(id) {
     events: {
       onReady: () => {
         console.log("YouTube player loaded");
+        ytPlayer.cueVideoById(id);
       },
       // 'onStateChange': onPlayerStateChange
     },
