@@ -1,3 +1,20 @@
+:root {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: black;
+    color: white;
+}
+
+h1 {
+    text-align: center;
+}
+
+aside {
+    padding-left: 1rem;
+}
+
 ul {
     list-style: none;
 }
@@ -5,8 +22,13 @@ ul {
 img #logoContainer {
 }
 
-#logoContainer {
-    width: 25%;
+#landingPage {
+    border: 1px solid red;
+    padding-left: 2rem;
+}
+
+#landingPage img {
+    width:100%;
 }
 
 .display-none {
