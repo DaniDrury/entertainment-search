@@ -1,30 +1,50 @@
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html {
+    font-family: 'Sora', sans-serif;
     height: 100%;
     background-color: black;
     color: white;
 }
 
-main {
-    background-image: url("../images/collage-dark.png");
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 100vh;
+body {
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    /* border: 1px solid red; */
 }
 
-h1 {
-    text-align: center;
+main {
+    min-width: 1600px;
+    max-width: 1920px;
+    /* border: 1px solid red; */
+    display: flex;
+    flex-flow: row wrap;
 }
 
 aside {
     padding-left: 1rem;
 }
 
+h1 {
+    margin-bottom: 2rem;
+}
+
+form {
+    padding-bottom: 1rem;
+}
+
 ul {
     list-style: none;
+}
+
+ul li {
+    padding-right: 0.5rem;
+    
 }
 
 footer {
@@ -32,16 +52,11 @@ footer {
     font-weight: bold;
 }
 
-img #logoContainer {
-}
-
-#landingPage {
-    padding-left: 2rem;
-}
-
-#landingPage img {
-    width:100%;
-}
+/* .button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+} */
 
 .display-none {
     display: none;
@@ -50,4 +65,42 @@ img #logoContainer {
 .row {
     display: flex;
     flex-flow: row wrap;
+}
+
+.col {
+    display: flex;
+    flex-flow: column wrap;
+}
+
+#mediaSelect {
+    margin-bottom: 1rem;
+    width: 80%;
+}
+
+#searchInput {
+    margin-bottom: 1rem;
+    width: 80%;
+}
+
+#searchBtn {
+    width: 80%;
+}
+
+#logoContainer {
+    padding-top: 2rem;
+}
+
+#logoContainer img {
+    padding: 1rem 0 0 0;
+}
+
+#landingPage {
+    background-image: url("../images/collage-dark.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    padding-left: 2rem;
+}
+
+@media screen {
+    
 }
