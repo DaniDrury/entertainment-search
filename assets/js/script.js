@@ -470,6 +470,8 @@ addEventListener("DOMContentLoaded", () => {
   const searchFormEL = document.querySelector("#searchForm");
   const searchSelectEl = document.querySelector("#mediaSelect");
   const searchInputEl = document.querySelector("#searchInput");
+  const modalh3El = document.querySelector(".modal-header h3");
+  const modalpEl = document.querySelector(".modal-body p");
 
   // Render history list from localStorage
   renderSearchHistory();
@@ -487,9 +489,10 @@ addEventListener("DOMContentLoaded", () => {
 
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
-      alert(
-        "Please enter a Search Category AND input a valid title or person name"
-      );
+      modalh3El.textContent = "Warning";
+      modalpEl.innerHTML =
+        "Please enter a <strong>Search Category</strong> AND input a valid <strong>title</strong> or <strong>person name</strong>";
+      myModal.show();
     }
     // Reset the form
     searchSelectEl.value = "";
