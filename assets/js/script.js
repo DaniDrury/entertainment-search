@@ -64,7 +64,7 @@ function renderSearchHistory() {
   const searchHistoryEL = document.querySelector("#searchHistory");
   searchHistoryEL.innerHTML = "";
 
-  console.log("search history: ",historyArr);
+  console.log("search history: ", historyArr);
 
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
@@ -273,6 +273,9 @@ function renderCastList(cast) {
   }
 }
 
+// Function to render the seasons list
+function renderSeasonList(seasons) {}
+
 // Main rendering function
 function renderDetails(selectedData, userCategory) {
   // DOM selectors
@@ -325,6 +328,14 @@ function renderDetails(selectedData, userCategory) {
 
     renderCastList(credits.cast);
     loadTrailer(videos.results);
+
+    // Render either the seasons list or directors list
+    // depending on TV or Movie
+    if (userCategory === "tv") {
+      // renderSeasonList(selectedData.seasons);
+    } else {
+      // renderDirectorList();
+    }
 
     // Get the right response data for the rating
     const ratings =
@@ -413,7 +424,7 @@ function displayTop5(results, userCategory) {
   ulEl.innerHTML = "";
 
   modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
-console.log(results);
+  console.log(results);
 
   // create and append 5 possible matches to user query
   for (let i = 0; i < 5 && i < results.length; i++) {
@@ -444,19 +455,17 @@ console.log(results);
     ulEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-    document
-      .querySelector(`#thumbnail-${i}`)
-      .addEventListener("click", () => {
-        let selectedId = results[i].id;
-        // Reset the modal list
-        ulEl.innerHTML = "";
+    document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
+      let selectedId = results[i].id;
+      // Reset the modal list
+      ulEl.innerHTML = "";
 
-        //fetch selected detail
-        fetchTmdbSelectedDetail(selectedId, userCategory);
+      //fetch selected detail
+      fetchTmdbSelectedDetail(selectedId, userCategory);
 
-        // Hide the modal after user picked a movie from 5 results
-        myModal.hide();
-      });
+      // Hide the modal after user picked a movie from 5 results
+      myModal.hide();
+    });
   }
   // Display the modal to the user
   myModal.show();
