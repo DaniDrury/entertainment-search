@@ -514,7 +514,7 @@ addEventListener("DOMContentLoaded", () => {
     if (!userInput || !userCategory) {
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
-        "Please enter a <strong>Search Category</strong> AND input a valid <strong>title</strong> or <strong>person name</strong>";
+        "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
       myModal.show();
       return;
     }
