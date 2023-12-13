@@ -6,28 +6,20 @@
 
 html {
     font-family: 'Sora', sans-serif;
-    height: 100%;
+    min-height: 100vh;
     background-color: black;
     color: white;
 }
 
 body {
-    display: flex;
-    flex-flow: column wrap;
+    min-height: 100vh;
     align-items: center;
-    /* border: 1px solid red; */
-}
-
-main {
-    min-width: 1600px;
-    max-width: 1920px;
-    /* border: 1px solid red; */
-    display: flex;
-    flex-flow: row wrap;
+    justify-content: center;
 }
 
 aside {
-    padding-left: 1rem;
+    padding: 0 1rem;
+    /* border: 1px solid red; */
 }
 
 h1 {
@@ -48,15 +40,10 @@ ul li {
 }
 
 footer {
-    text-align: center;
+    height: 10vh;
+    align-items: center;
     font-weight: bold;
 }
-
-/* .button-secondary {
-    color: white;
-    border-radius: 4px;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-} */
 
 .display-none {
     display: none;
@@ -70,6 +57,10 @@ footer {
 .col {
     display: flex;
     flex-flow: column wrap;
+}
+
+.modal-content {
+    color: black;
 }
 
 #mediaSelect {
@@ -95,16 +86,28 @@ footer {
 }
 
 #landingPage {
-    background-image: url("../images/collage-dark.png");
+    background-image: url("../images/jpg-collage-dark-1600x900.jpg");
     background-position: center;
     background-repeat: no-repeat;
-    padding-left: 2rem;
+    /* padding-left: 2rem; */
+    /* border: 1px solid red; */
 }
 
-.modal-content {
-    color: black;
-}
-
-@media screen {
+/* @media screen and (min-width: 768) {
     
+}
+
+@media screen and (min-width: 1085) {
+    
+}
+
+@media screen and (min-width: 1190) {
+        
+} */
+
+@media screen and (min-width: 1280) {
+    main {
+        min-width: 75%;
+        max-width: 90%;
+    }
 }
