@@ -17,16 +17,9 @@ body {
     justify-content: center;
 }
 
-main {
-    /* worked well at min=height 90% */
-    /* min-height: 100%; */
-    min-width: 75%;
-    max-width: 90%;
-    border: 1px solid red;
-}
-
 aside {
-    border: 1px solid red;
+    padding: 0 1rem;
+    /* border: 1px solid red; */
 }
 
 h1 {
@@ -50,7 +43,6 @@ footer {
     height: 10vh;
     align-items: center;
     font-weight: bold;
-    border: 1px solid red;
 }
 
 .display-none {
@@ -65,6 +57,10 @@ footer {
 .col {
     display: flex;
     flex-flow: column wrap;
+}
+
+.modal-content {
+    color: black;
 }
 
 #mediaSelect {
@@ -94,13 +90,24 @@ footer {
     background-position: center;
     background-repeat: no-repeat;
     /* padding-left: 2rem; */
-    border: 1px solid red;
+    /* border: 1px solid red; */
 }
 
-.modal-content {
-    color: black;
-}
-
-@media screen {
+/* @media screen and (min-width: 768) {
     
+}
+
+@media screen and (min-width: 1085) {
+    
+}
+
+@media screen and (min-width: 1190) {
+        
+} */
+
+@media screen and (min-width: 1280) {
+    main {
+        min-width: 75%;
+        max-width: 90%;
+    }
 }

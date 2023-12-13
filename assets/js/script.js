@@ -411,6 +411,8 @@ function displayTop5(results, userCategory) {
   // DOM selectors
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
+  // reset modal <p> element
+  modalpEl.textContent = "";
 
   modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
 console.log(results);
@@ -517,6 +519,10 @@ addEventListener("DOMContentLoaded", () => {
 
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
+      // reset modal ulEl
+      const ulEl = document.getElementById("thumbList");
+      ulEl.innerHTML = "";
+      
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
