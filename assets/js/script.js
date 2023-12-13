@@ -61,10 +61,14 @@ function saveSearchHistory(selectedData, userCategory) {
 
 // function to render the search history
 function renderSearchHistory() {
-  const searchHistoryEL = document.querySelector("#searchHistory");
+  const searchHistoryEL = document.querySelector("#searchHistory ul");
   searchHistoryEL.innerHTML = "";
 
   console.log("search history: ", historyArr);
+
+  if (historyArr.length !== 0) {
+    document.querySelector("#searchHistory p").textContent = "Previous Searches:";
+  }
 
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
