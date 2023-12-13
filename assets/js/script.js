@@ -1,3 +1,10 @@
+// DOM selectors
+const resultDisplayEl = document.querySelector("#searchResultsContainer");
+const landingPageEl = document.querySelector("#landingPage");
+const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
+const modalh3El = document.querySelector(".modal-header h3");
+const modalpEl = document.querySelector(".modal-body p");
+
 // Global Variables
 let ytPlayer;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
@@ -13,11 +20,12 @@ function renderYouTubePlayer() {
       playsinline: 1,
     },
     events: {
-      // onReady: onPlayerReady,
+      onReady: () => {
+        console.log("YouTube player loaded");
+      },
       // 'onStateChange': onPlayerStateChange
     },
   });
-  console.log("YouTube player loaded");
 }
 // Fetch the youtube trailer and display on the iframe
 async function fetchYoutubeTrailer(userInput) {
@@ -41,10 +49,10 @@ async function fetchYoutubeTrailer(userInput) {
 
 //#region Misc Functions
 // Save data to array and localStorage
-function saveResponse(tmdbData, userCategory) {
+function saveSearchHistory(selectedData, userCategory) {
   // Save the move to local storage
-  historyArr.push({ tmdbData, userCategory });
-  if (historyArr.length > 10) {
+  historyArr.push({ selectedData, userCategory });
+  if (historyArr.length > 6) {
     historyArr.shift();
   }
   localStorage.setItem("movie", JSON.stringify(historyArr));
@@ -56,28 +64,41 @@ function renderSearchHistory() {
   const searchHistoryEL = document.querySelector("#searchHistory");
   searchHistoryEL.innerHTML = "";
 
+  console.log("search history: ",historyArr);
+
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
-    const historyData = historyArr[i];
+    const { selectedData, userCategory } = historyArr[i];
+    const { poster_path, profile_path } = selectedData;
 
-    const htmlStr = `<li id="history-${i}"><img src="https://image.tmdb.org/t/p/w92${historyData.tmdbData.poster_path || historyData.tmdbData.profile_path
-      }"></li>`;
+    // Check if the image exist, if not render a placeholder
+    let imgUrl =
+      poster_path || profile_path
+        ? `https://image.tmdb.org/t/p/w92${poster_path || profile_path}`
+        : "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg";
+
+    // Create the Li element with nested img
+    const htmlStr = `<li id="history-${i}"><img src="${imgUrl}"></li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
 
     // event listener for each history in the list
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
-      const selectedId = historyData.tmdbData.id;
-
       //fetch selected detail
-      fetchTmdbSelectedDetail(selectedId, historyData.userCategory);
+      addHistory(selectedData, userCategory);
     });
   }
 }
 
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
+  // Check if a video response exist, hide the player and exit the function if not
+  if (videosArr.length === 0) {
+    document.getElementById("youtubePlayer").setAttribute("hidden", "");
+    return;
+  }
+
   // Default to the 1st video in the array
   let trailerKey = videosArr[0].key;
 
@@ -106,9 +127,10 @@ function loadTrailer(videosArr) {
 
 // Function to render the movie poster on the page
 function renderPoster(posterQueryParam) {
-  document.querySelector(
-    "#posterImg"
-  ).src = `https://image.tmdb.org/t/p/w780${posterQueryParam}`;
+  // Check if the image exist, if not render a placeholder
+  document.querySelector("#posterImg").src = posterQueryParam
+    ? `https://image.tmdb.org/t/p/w342${posterQueryParam}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 }
 
 // Function to render the rating of Movie/Tv show
@@ -139,18 +161,18 @@ function renderRating(ratings) {
 
 // Function to render cast & crew credits for Person searches
 function renderCredits(credits) {
-  const castUl = document.getElementById('castList');
-  const crewUl = document.getElementById('crewList');
+  const castUl = document.getElementById("castList");
+  const crewUl = document.getElementById("crewList");
 
   // deconstruct credits into cast & crew
   let { cast, crew } = credits;
 
   // hiding either cast or crew UL element if no associated responses
   if (cast.length === 0) {
-    castUl.classList.add('display-none');
+    castUl.setAttribute("hidden", "");
   }
   if (crew.length === 0) {
-    crewUl.classList.add('display-none');
+    crewUl.setAttribute("hidden", "");
   }
 
   // limiting responses to 10
@@ -158,7 +180,8 @@ function renderCredits(credits) {
 
   // deconstruct cast object & create Li elements
   for (let i = 0; i < cast.length && i < limit; i++) {
-    const { character, id, media_type, title, release_date, poster_path } = cast[i];
+    const { character, id, media_type, title, release_date, poster_path } =
+      cast[i];
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
     // skip responses where there's no poster
@@ -172,10 +195,12 @@ function renderCredits(credits) {
     <img src="${imgUrl}" alt="${title} Movie Poster">
     <p>${title}</p>
     <p>Character: ${character}</p>
-  </li>`
+  </li>`;
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
-    document.getElementById(`cast-${id}`).addEventListener('click', () => {
+    document.getElementById(`cast-${id}`).addEventListener("click", () => {
+      // Save the move to local storage
+      //fetch selected detail
       fetchTmdbSelectedDetail(id, media_type);
     });
   }
@@ -184,7 +209,7 @@ function renderCredits(credits) {
   limit = 10;
 
   // create crewArray for purposes of looking for duplicate credits
-  let crewArray = crew[0] ? [crew[0]]: [];
+  let crewArray = crew[0] ? [crew[0]] : [];
 
   // deconstruct crew object & get 10 crew credits - combining duplicates into one listing with multiple jobs
   for (let i = 1; i < crew.length && i < limit; i++) {
@@ -192,7 +217,7 @@ function renderCredits(credits) {
     let skip = false;
 
     // look for duplicate title credits - combine job data to first title credit
-    crewArray.forEach(el => {
+    crewArray.forEach((el) => {
       if (el.title === title) {
         el.job += ", " + job;
         skip = true;
@@ -205,13 +230,11 @@ function renderCredits(credits) {
       continue;
     }
     // add crew credit to crewArray if not a duplicate
-    crewArray.push(crew[i])
+    crewArray.push(crew[i]);
   }
 
   // deconstruct crewArray objects and create li items for each
-  console.log(crewArray);
-  
-   crewArray.forEach(el => {
+  crewArray.forEach((el) => {
     const { job, title, release_date, id, media_type, poster_path } = el;
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
@@ -219,244 +242,324 @@ function renderCredits(credits) {
       <img src="${imgUrl}" alt="${title} Movie Poster">
       <p>${title}</p>
       <p>Job: ${job}</p>
-    </li>`
+    </li>`;
 
     crewUl.insertAdjacentHTML("beforeend", htmlStr);
 
-    document.getElementById(`crew-${id}`).addEventListener('click', () => {
+    document.getElementById(`crew-${id}`).addEventListener("click", () => {
+      // Save the move to local storage
+      //fetch selected detail
       fetchTmdbSelectedDetail(id, media_type);
     });
   });
 }
 
-  // Function to render the cast list and listen to click on their name to give more detail on them.
-  function renderCastList(cast) {
-    const castListEl = document.querySelector("#castList");
-    castListEl.innerHTML = "Cast: ";
+// Function to render the cast list and listen to click on their name to give more detail on them.
+function renderCastList(cast) {
+  const castListEl = document.querySelector("#castList");
+  castListEl.innerHTML = "Cast: ";
 
-    // Display only 10 cast members
-    for (let i = 0; i < 10 && i < cast.length; i++) {
-      const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
-      castListEl.insertAdjacentHTML("beforeend", htmlStr);
+  // Display only 10 cast members
+  for (let i = 0; i < 10 && i < cast.length; i++) {
+    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+    castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
-      // Event listener to fetch the detail of the cast
-      document.querySelector(`#cast-${i}`).addEventListener("click", () => {
-        fetchTmdbSelectedDetail(cast[i].id,'person');
-      });
-    }
+    // Event listener to fetch the detail of the cast
+    document.querySelector(`#cast-${i}`).addEventListener("click", () => {
+      // Save the move to local storage
+      //fetch selected detail
+      fetchTmdbSelectedDetail(cast[i].id, "person");
+    });
   }
+}
 
-  function renderDetails(details, userCategory) {
-    const selectedDetailEL = document.querySelector("#selectedDetail");
-    const playerAndStreamEl = document.querySelector("#playerAndStream");
-    // Reset the element
-    selectedDetailEL.innerHTML = "";
+// Main rendering function
+function renderDetails(selectedData, userCategory) {
+  // DOM selectors
+  const selectedDetailEL = document.querySelector("#selectedDetail");
+  const playerAndStreamEl = document.querySelector("#playerAndStream");
+  // Reset the element
+  selectedDetailEL.innerHTML = "";
 
-    // render different details depending on search category (movie, tv or person)
-    let htmlStr = "";
+  // Destructure the selectedData object
+  const {
+    poster_path,
+    profile_path,
+    title,
+    name,
+    overview,
+    release_date,
+    first_air_date,
+    credits,
+    videos,
+    release_dates,
+    content_ratings,
+  } = selectedData;
 
-    // render Movie/TV details
-    if (userCategory !== "person") {
-      // resets visibility of video & streaming options elements (if display set to none due to previous person search)
-      playerAndStreamEl.classList.remove("display-none");
+  // Render the profile/poster for user selected choice
+  renderPoster(poster_path || profile_path);
 
-      // insert HTML creating Movie/TV Detail elements
-      htmlStr = `<h2>${details.title || details.name}</h2>
+  // render different details depending on search category (movie, tv or person)
+  // render Movie/TV details
+  if (userCategory !== "person") {
+    // resets visibility of video & streaming options elements (if display set to none due to previous person search)
+    playerAndStreamEl.removeAttribute("hidden");
+
+    // insert HTML creating Movie/TV Detail elements
+    const htmlStr = `<h2>${title || name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="plotSumContainer">
         <h3>Plot Summary</h3>
-        <p>${details.overview}</p>
+        <p>${overview}</p>
       </div>
       <div id="additionalData">
-        <p>Release Date: <span>${details.release_date || details.first_air_date
-        }</span></p>
+        <p>Release Date: <span>${release_date || first_air_date}</span></p>
         <p>Rating: <span id="rating"></span></p>
         <ul id="directorsOrSeasons"></ul>
         <ul id="castList">Cast: </ul>
       </div>
     </div>`;
 
-      // render Person details
-    } else {
-      // sets visibility of video and streaming options elements to none
-      playerAndStreamEl.classList.add("display-none");
+    // Append the detail onto the page
+    selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-      // insert HTML creating Person Detail elements
-      htmlStr = `<h2>${details.name}</h2>
+    renderCastList(credits.cast);
+    loadTrailer(videos.results);
+
+    // Get the right response data for the rating
+    const ratings =
+      userCategory === "movie"
+        ? release_dates.results
+        : content_ratings.results;
+    renderRating(ratings, userCategory);
+
+    // render Person details
+  } else {
+    // sets visibility of video and streaming options elements to none
+    playerAndStreamEl.setAttribute("hidden", "");
+
+    // insert HTML creating Person Detail elements
+    const htmlStr = `<h2>${selectedData.name}</h2>
     <div class="display-flex-column-maybe??">
       <div id="personSumContainer">
         <h3>Biography</h3>
-        <p>${details.biography}</p>
+        <p>${selectedData.biography}</p>
       </div>
       <div id="additionalData">
-        <p>Birthday: <span>${details.birthday}</span></p>
-        <p>Place of Birth: <span>${details.place_of_birth}</span></p>
+        <p>Birthday: <span>${selectedData.birthday}</span></p>
+        <p>Place of Birth: <span>${selectedData.place_of_birth}</span></p>
         <ul id="castList">Cast Credits: </ul>
         <ul id="crewList">Crew Credits: </ul>
       </div>
     </div>`;
-    }
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    // call renderCastList and renderRating only if movie or tv search category
-    if (userCategory !== "person") {
-      renderCastList(details.credits.cast);
-
-      // Get the right response data for the rating
-      const ratings =
-        userCategory === "movie"
-          ? details.release_dates.results
-          : details.content_ratings.results;
-      renderRating(ratings, userCategory);
-    } else {
-      renderCredits(details.combined_credits);
-    }
+    renderCredits(selectedData.combined_credits);
   }
 
-  //#endregion Misc Functions
+  // Hide landing page and show result page
+  landingPageEl.setAttribute("hidden", "");
+  resultDisplayEl.removeAttribute("hidden");
+}
 
-  //#region TMDB API
-  // Function to fetch the movie detail using the movieId that was retrieved from TMDB
-  async function fetchTmdbSelectedDetail(selectedId, userCategory) {
-    // DOM selectors
-    const resultDisplayEl = document.querySelector("#searchResultsContainer");
-    const landingPageEl = document.querySelector("#landingPage");
+//#endregion Misc Functions
 
-    // Create an url for API call
-    const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
+//#region TMDB API
+// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+function addHistory(selectedData, userCategory) {
+  // Set the parameters for the page history to come back to
+  const stateHistory = {
+    page: history.state.page + 1,
+    selectedData,
+    userCategory,
+  };
 
-    try {
-      const response = await fetch(url);
-      const selectedData = await response.json();
-      console.log(`${userCategory} details: `, selectedData);
+  // Add popstate history
+  history.pushState(stateHistory, "", "");
+  // console.log("pushState: ", stateHistory);
 
-      // Function calls
-      renderPoster(selectedData.poster_path || selectedData.profile_path);
-      renderDetails(selectedData, userCategory);
+  // Fetch the selection detail if Id was pass into the function
+  if (selectedData) {
+    renderDetails(selectedData, userCategory);
 
-      // Load a trailer video from youtube if the category isn't person
-      if (userCategory !== "person") {
-        loadTrailer(selectedData.videos.results);
-      }
-
-      landingPageEl.classList.add("display-none");
-      resultDisplayEl.classList.remove("display-none");
-    } catch (error) {
-      console.error(error);
-    }
+    console.log(selectedData);
   }
+}
 
-  // function to display top 5 results of search - allow user to select specific one
-  function displayTop5(results, userCategory) {
-    const ulEl = document.getElementById("thumbList");
-    ulEl.innerHTML = "";
+async function fetchTmdbSelectedDetail(selectedId, userCategory) {
+  console.log("Fetch selected data");
+  // Create an url for API call
+  const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
-    // create and append 5 possible matches to user query
-    for (let i = 0; i < 5 && i < results.length; i++) {
-      // Result datas
-      const name = results[i].name || results[i].original_title;
-      const image = results[i].profile_path || results[i].poster_path;
-      const date = results[i].release_date || results[i].first_air_date;
+  try {
+    const response = await fetch(url);
+    const selectedData = await response.json();
+    console.log(`${userCategory} details: `, selectedData);
 
-      // Created Elements
-      const thumbnail = document.createElement("li");
-      const thumbContainer = document.createElement("div");
-      thumbContainer.setAttribute("class", "card");
-      const thumbTitle = document.createElement("h3");
-      const thumbPoster = document.createElement("img");
-      const thumbRelease = document.createElement("p");
+    // Save reponse data to localStorage and add to history
+    saveSearchHistory(selectedData, userCategory);
+    addHistory(selectedData, userCategory);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-      thumbTitle.textContent = name;
-      thumbPoster.setAttribute("src", "https://image.tmdb.org/t/p/w92" + image);
+// function to display top 5 results of search - allow user to select specific one
+function displayTop5(results, userCategory) {
+  // DOM selectors
+  const ulEl = document.getElementById("thumbList");
+  ulEl.innerHTML = "";
 
-      if (date) {
-        thumbRelease.textContent = "Release Date: " + date;
-      } else {
-        // or something else?  what do we want to do?
-        thumbRelease.setAttribute("display", "none");
-      }
+  modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
+console.log(results);
 
-      thumbContainer.appendChild(thumbTitle);
-      thumbContainer.appendChild(thumbPoster);
-      thumbContainer.appendChild(thumbRelease);
-      thumbnail.appendChild(thumbContainer);
+  // create and append 5 possible matches to user query
+  for (let i = 0; i < 5 && i < results.length; i++) {
+    // Deconstruct result object
+    const {
+      name,
+      original_title,
+      profile_path,
+      poster_path,
+      release_date,
+      first_air_date,
+    } = results[i];
 
-      ulEl.appendChild(thumbnail);
+    // Result datas
+    const nameData = name || original_title;
+    const imageUrl = profile_path || poster_path;
+    const date = release_date || first_air_date || "N/A";
 
-      // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-      thumbnail.addEventListener("click", (ev) => {
+    // Create the html string to append to the Ul element
+    const top5Str = `<li id="thumbnail-${i}">
+      <div class="card">
+        <h3>${nameData}</h3>
+        <img src="https://image.tmdb.org/t/p/w92${imageUrl}">
+        <p>Release Date: ${date}</p>
+      </div>
+    </li>`;
+    // Append the html string to the end of the Ul element
+    ulEl.insertAdjacentHTML("beforeend", top5Str);
+
+    // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
+    document
+      .querySelector(`#thumbnail-${i}`)
+      .addEventListener("click", () => {
         let selectedId = results[i].id;
         // Reset the modal list
         ulEl.innerHTML = "";
 
-        // Save the move to local storage
-        saveResponse(results[i], userCategory);
         //fetch selected detail
         fetchTmdbSelectedDetail(selectedId, userCategory);
+
+        // Hide the modal after user picked a movie from 5 results
+        myModal.hide();
       });
-    }
   }
+  // Display the modal to the user
+  myModal.show();
+}
 
-  // Function to fetch the movieId using the search string from the user
-  async function fetchTmdbId(userCategory, userInput) {
-    // Create an url for an API call
-    const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
+// Function to fetch the movieId using the search string from the user
+async function fetchTmdbId(userCategory, userInput) {
+  // Create an url for an API call
+  const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
-    try {
-      const response = await fetch(url);
-      const responseData = await response.json();
-      console.log(`${userCategory} search: `, responseData);
+  try {
+    const response = await fetch(url);
+    const responseData = await response.json();
+    console.log(`${userCategory} search: `, responseData);
 
-      // Display top 5 results for user to select the right movie
-      if (responseData.results.length > 1) {
-        displayTop5(responseData.results, userCategory);
-      } else {
-        // Save the move to local storage
-        saveResponse(responseData.results[0], userCategory);
-        //fetch selected detail
-        fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
-      }
-    } catch (error) {
-      console.error(error);
+    // Display top 5 results for user to select the right movie
+    if (responseData.results.length > 1) {
+      displayTop5(responseData.results, userCategory);
+
+      // If there's only one result
+    } else {
+      //fetch selected detail
+      fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
     }
+  } catch (error) {
+    console.error(error);
   }
-  //#endregion TMDB API
+}
+//#endregion TMDB API
 
-  // Init on DOM ready
-  addEventListener("DOMContentLoaded", () => {
-    // DOM selections
-    const searchFormEL = document.querySelector("#searchForm");
-    const searchSelectEl = document.querySelector("#mediaSelect");
-    const searchInputEl = document.querySelector("#searchInput");
+//#region Inits
+// Init on DOM ready
+addEventListener("DOMContentLoaded", () => {
+  // DOM selections
+  const searchFormEL = document.querySelector("#searchForm");
+  const searchSelectEl = document.querySelector("#mediaSelect");
+  const searchInputEl = document.querySelector("#searchInput");
 
-    // Render history list from localStorage
-    renderSearchHistory();
+  // Render history list from localStorage
+  renderSearchHistory();
 
-    // Event listener for the search form's submit event
-    searchFormEL.addEventListener("submit", (evt) => {
-      evt.preventDefault();
+  // Start page history on load
+  // 2 history states for landind page to be use in conditional
+  history.pushState({ page: 0 }, "", "");
+  addHistory();
 
-      // Get movie name from the user
-      const userCategory = searchSelectEl.value;
-      const userInput = searchInputEl.value.trim();
+  // Event listener for the search form's submit event
+  searchFormEL.addEventListener("submit", (evt) => {
+    evt.preventDefault();
 
-      // Change this to modal, can't use alert
-      if (!userInput || !userCategory) {
-        alert(
-          "Please enter a Search Category AND input a valid title or person name"
-        );
-      }
-      // Reset the form
-      searchSelectEl.value = "";
-      searchInputEl.value = "";
+    // Get movie name from the user
+    const userCategory = searchSelectEl.value;
+    const userInput = searchInputEl.value.trim();
 
-      // fetchYoutubeTrailer(userInput);
-      fetchTmdbId(userCategory, userInput);
-    });
+    // Reset the form
+    searchSelectEl.value = "";
+    searchInputEl.value = "";
+
+    // Change this to modal, can't use alert
+    if (!userInput || !userCategory) {
+      modalh3El.textContent = "Warning";
+      modalpEl.innerHTML =
+        "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
+      myModal.show();
+      return;
+    }
+
+    // fetchYoutubeTrailer(userInput);
+    fetchTmdbId(userCategory, userInput);
   });
+});
 
-  addEventListener("load", () => {
-    renderYouTubePlayer();
-  });
+// Init onLoad
+addEventListener("load", () => {
+  // Load the youtube player
+  renderYouTubePlayer();
+
+  // history doesn't remember scoll location
+  history.scrollRestoration = "manual";
+});
+
+// Event listener on history state change
+addEventListener("popstate", () => {
+  // debug log
+  // console.log("Back to: ", history.state);
+
+  // Deconstruct history.state object
+  const { selectedData, userCategory } = history.state;
+
+  // If went to the landing page, display the landing page
+  if (history.state.page === 1) {
+    landingPageEl.removeAttribute("hidden");
+    resultDisplayEl.setAttribute("hidden", "");
+
+    // If you went back passed the 2nd state for landing page go forward
+  } else if (history.state.page < 1) {
+    setTimeout(() => {
+      history.forward();
+    }, 20);
+
+    // Fetch the selected data of current history page
+  } else {
+    renderDetails(selectedData, userCategory);
+  }
+});
+//#endregion Inits
