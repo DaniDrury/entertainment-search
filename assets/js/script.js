@@ -278,8 +278,11 @@ function renderDetails(selectedData, userCategory) {
   // DOM selectors
   const selectedDetailEL = document.querySelector("#selectedDetail");
   const playerAndStreamEl = document.querySelector("#playerAndStream");
+  const tvSeasonsEl =document.querySelector("#seasonInformationContainer");
+ 
   // Reset the element
   selectedDetailEL.innerHTML = "";
+ tvSeasonsEl.innerHTML= "";
 
   // Destructure the selectedData object
   const {
@@ -294,6 +297,7 @@ function renderDetails(selectedData, userCategory) {
     videos,
     release_dates,
     content_ratings,
+    seasons, 
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -333,6 +337,18 @@ function renderDetails(selectedData, userCategory) {
         : content_ratings.results;
     renderRating(ratings, userCategory);
 
+    //render tv seasons
+    if(seasons){
+      tvSeasonsEl.insertAdjacentHTML("beforeend", "<h2>Seasons information</h2>"); 
+      
+      for(let i=0;i<seasons.length;i++){
+       const season= seasons[i];
+       const seasonDetail= `<p>${season.name}<br>Number of Episodes:
+       ${season.episode_count}
+       </p>`;
+       tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetail); 
+      }
+   }
     // render Person details
   } else {
     // sets visibility of video and streaming options elements to none
