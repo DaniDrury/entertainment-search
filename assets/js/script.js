@@ -2,6 +2,8 @@
 const resultDisplayEl = document.querySelector("#searchResultsContainer");
 const landingPageEl = document.querySelector("#landingPage");
 const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
+const modalh3El = document.querySelector(".modal-header h3");
+const modalpEl = document.querySelector(".modal-body p");
 
 // Global Variables
 let ytPlayer;
@@ -62,7 +64,7 @@ function renderSearchHistory() {
   const searchHistoryEL = document.querySelector("#searchHistory");
   searchHistoryEL.innerHTML = "";
 
-  console.log(historyArr);
+  console.log("search history: ",historyArr);
 
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
@@ -127,7 +129,7 @@ function loadTrailer(videosArr) {
 function renderPoster(posterQueryParam) {
   // Check if the image exist, if not render a placeholder
   document.querySelector("#posterImg").src = posterQueryParam
-    ? `https://image.tmdb.org/t/p/w780${posterQueryParam}`
+    ? `https://image.tmdb.org/t/p/w342${posterQueryParam}`
     : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 }
 
@@ -376,11 +378,13 @@ function addHistory(selectedData, userCategory) {
 
   // Add popstate history
   history.pushState(stateHistory, "", "");
-  console.log("pushState: ", stateHistory);
+  // console.log("pushState: ", stateHistory);
 
   // Fetch the selection detail if Id was pass into the function
   if (selectedData) {
     renderDetails(selectedData, userCategory);
+
+    console.log(selectedData);
   }
 }
 
@@ -403,13 +407,16 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
 }
 
 // function to display top 5 results of search - allow user to select specific one
-function displayTop5(results, userCategory, index = 0) {
+function displayTop5(results, userCategory) {
   // DOM selectors
   const ulEl = document.getElementById("thumbList");
   ulEl.innerHTML = "";
 
+  modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
+console.log(results);
+
   // create and append 5 possible matches to user query
-  for (index; index < 5 && index < results.length; index++) {
+  for (let i = 0; i < 5 && i < results.length; i++) {
     // Deconstruct result object
     const {
       name,
@@ -418,7 +425,7 @@ function displayTop5(results, userCategory, index = 0) {
       poster_path,
       release_date,
       first_air_date,
-    } = results[index];
+    } = results[i];
 
     // Result datas
     const nameData = name || original_title;
@@ -426,7 +433,7 @@ function displayTop5(results, userCategory, index = 0) {
     const date = release_date || first_air_date || "N/A";
 
     // Create the html string to append to the Ul element
-    const top5Str = `<li id="thumbnail-${index}">
+    const top5Str = `<li id="thumbnail-${i}">
       <div class="card">
         <h3>${nameData}</h3>
         <img src="https://image.tmdb.org/t/p/w92${imageUrl}">
@@ -438,9 +445,9 @@ function displayTop5(results, userCategory, index = 0) {
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
     document
-      .querySelector(`#thumbnail-${index}`)
+      .querySelector(`#thumbnail-${i}`)
       .addEventListener("click", () => {
-        let selectedId = results[index].id;
+        let selectedId = results[i].id;
         // Reset the modal list
         ulEl.innerHTML = "";
 
@@ -487,8 +494,6 @@ addEventListener("DOMContentLoaded", () => {
   const searchFormEL = document.querySelector("#searchForm");
   const searchSelectEl = document.querySelector("#mediaSelect");
   const searchInputEl = document.querySelector("#searchInput");
-  const modalh3El = document.querySelector(".modal-header h3");
-  const modalpEl = document.querySelector(".modal-body p");
 
   // Render history list from localStorage
   renderSearchHistory();
@@ -514,7 +519,7 @@ addEventListener("DOMContentLoaded", () => {
     if (!userInput || !userCategory) {
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
-        "Please enter a <strong>Search Category</strong> AND input a valid <strong>title</strong> or <strong>person name</strong>";
+        "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
       myModal.show();
       return;
     }
@@ -536,7 +541,7 @@ addEventListener("load", () => {
 // Event listener on history state change
 addEventListener("popstate", () => {
   // debug log
-  console.log("Back to: ", history.state);
+  // console.log("Back to: ", history.state);
 
   // Deconstruct history.state object
   const { selectedData, userCategory } = history.state;
