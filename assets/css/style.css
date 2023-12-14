@@ -49,11 +49,9 @@ ul li {
     max-width: 10em;
     text-align: center;
     padding-bottom: 1em;
-    /* border: 1px solid blue; */
 }
 
 li div {
-    /* border: 1px solid red; */
     display: inline;
 }
 
@@ -118,7 +116,6 @@ footer {
 
 #searchResultsContainer {
     padding-top: 1em;
-    /* border: 1px solid red; */
 }
 
 .justify-between {
