@@ -166,7 +166,7 @@ function renderRating(ratings) {
 }
 
 // Function to render cast & crew credits for Person searches
-function renderCredits(credits) {
+function renderPersonCredits(credits) {
   const castUl = document.getElementById("castList");
   const crewUl = document.getElementById("crewList");
 
@@ -184,6 +184,7 @@ function renderCredits(credits) {
   // limiting responses to 10
   let limit = 10;
 
+  castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
   // deconstruct cast object & create Li elements
   for (let i = 0; i < cast.length && i < limit; i++) {
     const { character, id, media_type, title, release_date, poster_path } =
@@ -198,10 +199,10 @@ function renderCredits(credits) {
 
     // create list item for each cast credit
     const htmlStr = `<li id="cast-${id}">
-    <img src="${imgUrl}" alt="${title} Movie Poster">
-    <p>${title}</p>
-    <p>Character: ${character}</p>
-  </li>`;
+      <img src="${imgUrl}" alt="${title} Movie Poster">
+      <p>${title}</p>
+      <p>Character: ${character}</p>
+    </li>`;
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
@@ -239,6 +240,7 @@ function renderCredits(credits) {
     crewArray.push(crew[i]);
   }
 
+  crewUl.insertAdjacentHTML("beforeBegin", "<h3>Crew Credits: </h3>");
   // deconstruct crewArray objects and create li items for each
   crewArray.forEach((el) => {
     const { job, title, release_date, id, media_type, poster_path } = el;
@@ -261,14 +263,19 @@ function renderCredits(credits) {
 }
 
 // Function to render the cast list and listen to click on their name to give more detail on them.
-function renderCastList(cast) {
+function renderMovieTvCastList(cast) {
   const castListEl = document.querySelector("#castList");
   castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const htmlStr = 
+    const imgUrl = cast[i].profile_path ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    
+    const htmlStr =
       `<li class="col align-center" id="cast-${i}">
-        ${cast[i].name} as ${cast[i].character}
+        <img src="${imgUrl}">
+        <p>${cast[i].name}</p>
+        <p>${cast[i].character}</p>
       </li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
@@ -282,7 +289,7 @@ function renderCastList(cast) {
 }
 
 // Function to render the seasons list
-function renderSeasonList(seasons) {
+function renderTvSeasonList(seasons) {
   const tvSeasonsEl = document.querySelector("#directorsOrSeasons");
 
   tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
@@ -344,7 +351,7 @@ function renderDetails(selectedData, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCastList(credits.cast);
+    renderMovieTvCastList(credits.cast);
     loadTrailer(videos.results);
 
     // Render either the seasons list or directors list
@@ -361,9 +368,9 @@ function renderDetails(selectedData, userCategory) {
         ? release_dates.results
         : content_ratings.results;
     renderRating(ratings, userCategory);
-    
+
     if (seasons) {
-      renderSeasonList(seasons);
+      renderTvSeasonList(seasons);
     }
     // render Person details
   } else {
@@ -374,15 +381,15 @@ function renderDetails(selectedData, userCategory) {
     const htmlStr = `<h2>${selectedData.name}</h2>
         <h3>Biography</h3>
         <p>${selectedData.biography}</p>
-        <p>Birthday: <span>${selectedData.birthday}</span></p>
-        <p>Place of Birth: <span>${selectedData.place_of_birth}</span></p>
-        <ul id="castList">Cast Credits: </ul>
-        <ul id="crewList">Crew Credits: </ul>`;
+        <h3>Birthday: <span>${selectedData.birthday}</span></h3>
+        <h3>Place of Birth: <span>${selectedData.place_of_birth}</span></h3>
+        <ul id="castList" class="row"></ul>
+        <ul id="crewList" class="row"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCredits(selectedData.combined_credits);
+    renderPersonCredits(selectedData.combined_credits);
   }
 
   // Hide landing page and show result page
@@ -503,7 +510,18 @@ async function fetchTmdbId(userCategory, userInput) {
       displayTop5(responseData.results, userCategory);
 
       // If there's only one result
-    } else {
+    } else if (responseData.results.length === 0) {
+        // reset modal ulEl
+        const ulEl = document.getElementById("thumbList");
+        ulEl.innerHTML = "";
+  
+        modalh3El.textContent = "Warning";
+        modalpEl.innerHTML =
+          "Could not find any exact matches - please check your spelling!";
+        myModal.show();
+        return;
+    }
+    else {
       //fetch selected detail
       fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
     }
