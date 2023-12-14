@@ -56,25 +56,29 @@
     <!-- Result Section -->
     <section id="searchResultsContainer" class="pure-u-1 pure-u-md-3-4" hidden>
       <!-- Poster and Bio -->
-      <section>
-        <div class="pure-g">
-          <div id="posterContainer" class="pure-u-1-4">
-            <img src="" alt="poster image" id="posterImg" />
+      <div class="pure-g">
+        <div id="posterContainer" class="pure-u-1-4">
+          <img src="" alt="poster image" id="posterImg" />
+          <div id="playerAndStream">
+            <button id="trailerModal">Play Trailer</button>
+            <div id="streamingContainer">
+              <h3>Streaming Options</h3>
+              <ul id="streamingList"></ul>
+            </div>
           </div>
-          <article id="selectedDetail" class="pure-u-3-4 col gap"></article>
         </div>
-      </section>
+        <article id="selectedDetail" class="pure-u-3-4 col gap"></article>
+      </div>
       <!-- Trailer and streaming options -->
-      <section id="playerAndStream">
+      <!-- <section id="playerAndStream">
         <div class="row">
-          <!-- This div will be changed to iframe -->
           <div id="youtubePlayer"></div>
           <div id="streamingContainer">
             <h3>Streaming Options</h3>
             <ul id="streamingList"></ul>
           </div>
         </div>
-      </section>
+      </section> -->
     </section>
   </main>
 
@@ -87,7 +91,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
         </div>
         <div class="modal-body">
-          <!-- This p tage is use for "alert" -->
+          <div id="youtubePlayer" hidden></div>
+          <!-- This p tag is use for "alert" -->
           <p></p>
           <ul id="thumbList"></ul>
         </div>
