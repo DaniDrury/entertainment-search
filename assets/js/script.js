@@ -61,10 +61,14 @@ function saveSearchHistory(selectedData, userCategory) {
 
 // function to render the search history
 function renderSearchHistory() {
-  const searchHistoryEL = document.querySelector("#searchHistory");
+  const searchHistoryEL = document.querySelector("#searchHistory ul");
   searchHistoryEL.innerHTML = "";
 
   console.log("search history: ", historyArr);
+
+  if (historyArr.length !== 0) {
+    document.querySelector("#searchHistory p").textContent = "Previous Searches:";
+  }
 
   for (let i = 0; i < historyArr.length; i++) {
     // current saved data in the history array
@@ -97,6 +101,8 @@ function loadTrailer(videosArr) {
   if (videosArr.length === 0) {
     document.getElementById("youtubePlayer").setAttribute("hidden", "");
     return;
+  } else {
+    document.getElementById("youtubePlayer").removeAttribute("hidden");
   }
 
   // Default to the 1st video in the array
@@ -160,7 +166,7 @@ function renderRating(ratings) {
 }
 
 // Function to render cast & crew credits for Person searches
-function renderCredits(credits) {
+function renderPersonCredits(credits) {
   const castUl = document.getElementById("castList");
   const crewUl = document.getElementById("crewList");
 
@@ -178,6 +184,7 @@ function renderCredits(credits) {
   // limiting responses to 10
   let limit = 10;
 
+  castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
   // deconstruct cast object & create Li elements
   for (let i = 0; i < cast.length && i < limit; i++) {
     const { character, id, media_type, title, release_date, poster_path } =
@@ -192,10 +199,10 @@ function renderCredits(credits) {
 
     // create list item for each cast credit
     const htmlStr = `<li id="cast-${id}">
-    <img src="${imgUrl}" alt="${title} Movie Poster">
-    <p>${title}</p>
-    <p>Character: ${character}</p>
-  </li>`;
+      <img src="${imgUrl}" alt="${title} Movie Poster">
+      <p>${title}</p>
+      <p>Character: ${character}</p>
+    </li>`;
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
@@ -233,6 +240,7 @@ function renderCredits(credits) {
     crewArray.push(crew[i]);
   }
 
+  crewUl.insertAdjacentHTML("beforeBegin", "<h3>Crew Credits: </h3>");
   // deconstruct crewArray objects and create li items for each
   crewArray.forEach((el) => {
     const { job, title, release_date, id, media_type, poster_path } = el;
@@ -255,13 +263,20 @@ function renderCredits(credits) {
 }
 
 // Function to render the cast list and listen to click on their name to give more detail on them.
-function renderCastList(cast) {
+function renderMovieTvCastList(cast) {
   const castListEl = document.querySelector("#castList");
-  castListEl.innerHTML = "Cast: ";
-
+  castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+    const imgUrl = cast[i].profile_path ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    
+    const htmlStr =
+      `<li class="col align-center" id="cast-${i}">
+        <img src="${imgUrl}">
+        <p>${cast[i].name}</p>
+        <p>${cast[i].character}</p>
+      </li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
     // Event listener to fetch the detail of the cast
@@ -274,7 +289,22 @@ function renderCastList(cast) {
 }
 
 // Function to render the seasons list
-function renderSeasonList(seasons) {}
+function renderTvSeasonList(seasons) {
+  const tvSeasonsEl = document.querySelector("#directorsOrSeasons");
+
+  tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
+  for (let i = 1; i < seasons.length; i++) {
+    const season = seasons[i];
+    const seasonDetailHtml =
+      `<li class='col align-center'>
+        <p>${season.name}</p>
+        <img src="https://image.tmdb.org/t/p/w92${season.poster_path}">
+        <p>Episode Count: ${season.episode_count}</p>
+      </li>`;
+    tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetailHtml);
+  }
+}
+
 
 // Main rendering function
 function renderDetails(selectedData, userCategory) {
@@ -297,6 +327,7 @@ function renderDetails(selectedData, userCategory) {
     videos,
     release_dates,
     content_ratings,
+    seasons
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -310,23 +341,17 @@ function renderDetails(selectedData, userCategory) {
 
     // insert HTML creating Movie/TV Detail elements
     const htmlStr = `<h2>${title || name}</h2>
-    <div class="display-flex-column-maybe??">
-      <div id="plotSumContainer">
         <h3>Plot Summary</h3>
         <p>${overview}</p>
-      </div>
-      <div id="additionalData">
-        <p>Release Date: <span>${release_date || first_air_date}</span></p>
-        <p>Rating: <span id="rating"></span></p>
-        <ul id="directorsOrSeasons"></ul>
-        <ul id="castList">Cast: </ul>
-      </div>
-    </div>`;
+        <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
+        <h3>Rating: <span id="rating"></span></h3>
+        <ul id="castList" class="row"></ul>
+        <ul id="directorsOrSeasons" class="row"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCastList(credits.cast);
+    renderMovieTvCastList(credits.cast);
     loadTrailer(videos.results);
 
     // Render either the seasons list or directors list
@@ -344,6 +369,9 @@ function renderDetails(selectedData, userCategory) {
         : content_ratings.results;
     renderRating(ratings, userCategory);
 
+    if (seasons) {
+      renderTvSeasonList(seasons);
+    }
     // render Person details
   } else {
     // sets visibility of video and streaming options elements to none
@@ -351,23 +379,17 @@ function renderDetails(selectedData, userCategory) {
 
     // insert HTML creating Person Detail elements
     const htmlStr = `<h2>${selectedData.name}</h2>
-    <div class="display-flex-column-maybe??">
-      <div id="personSumContainer">
         <h3>Biography</h3>
         <p>${selectedData.biography}</p>
-      </div>
-      <div id="additionalData">
-        <p>Birthday: <span>${selectedData.birthday}</span></p>
-        <p>Place of Birth: <span>${selectedData.place_of_birth}</span></p>
-        <ul id="castList">Cast Credits: </ul>
-        <ul id="crewList">Crew Credits: </ul>
-      </div>
-    </div>`;
+        <h3>Birthday: <span>${selectedData.birthday}</span></h3>
+        <h3>Place of Birth: <span>${selectedData.place_of_birth}</span></h3>
+        <ul id="castList" class="row"></ul>
+        <ul id="crewList" class="row"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderCredits(selectedData.combined_credits);
+    renderPersonCredits(selectedData.combined_credits);
   }
 
   // Hide landing page and show result page
@@ -488,7 +510,18 @@ async function fetchTmdbId(userCategory, userInput) {
       displayTop5(responseData.results, userCategory);
 
       // If there's only one result
-    } else {
+    } else if (responseData.results.length === 0) {
+        // reset modal ulEl
+        const ulEl = document.getElementById("thumbList");
+        ulEl.innerHTML = "";
+  
+        modalh3El.textContent = "Warning";
+        modalpEl.innerHTML =
+          "Could not find any exact matches - please check your spelling!";
+        myModal.show();
+        return;
+    }
+    else {
       //fetch selected detail
       fetchTmdbSelectedDetail(responseData.results[0].id, userCategory);
     }
@@ -531,7 +564,7 @@ addEventListener("DOMContentLoaded", () => {
       // reset modal ulEl
       const ulEl = document.getElementById("thumbList");
       ulEl.innerHTML = "";
-      
+
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
