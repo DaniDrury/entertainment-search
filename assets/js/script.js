@@ -101,6 +101,8 @@ function loadTrailer(videosArr) {
   if (videosArr.length === 0) {
     document.getElementById("youtubePlayer").setAttribute("hidden", "");
     return;
+  } else {
+    document.getElementById("youtubePlayer").removeAttribute("hidden");
   }
 
   // Default to the 1st video in the array
@@ -349,18 +351,12 @@ function renderDetails(selectedData, userCategory) {
 
     // insert HTML creating Person Detail elements
     const htmlStr = `<h2>${selectedData.name}</h2>
-    <div class="display-flex-column-maybe??">
-      <div id="personSumContainer">
         <h3>Biography</h3>
         <p>${selectedData.biography}</p>
-      </div>
-      <div id="additionalData">
         <p>Birthday: <span>${selectedData.birthday}</span></p>
         <p>Place of Birth: <span>${selectedData.place_of_birth}</span></p>
         <ul id="castList">Cast Credits: </ul>
-        <ul id="crewList">Crew Credits: </ul>
-      </div>
-    </div>`;
+        <ul id="crewList">Crew Credits: </ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
