@@ -10,7 +10,6 @@ html {
     background-color: black;
     color: white;
 }
-
 main {
     min-width: 80%;
     /* max-width: 90%; */
@@ -22,9 +21,9 @@ body {
     justify-content: center;
 }
 
+/* MAY NEED TO REMOVE */
 aside {
-    /* padding: 0 1rem; */
-    /* border: 1px solid red; */
+    padding-left: 1em;
 }
 
 h1 {
@@ -94,29 +93,27 @@ footer {
     background-image: url("../images/jpg-collage-dark-1600x900.jpg");
     background-position: center;
     background-repeat: no-repeat;
-    /* padding-left: 2rem; */
+}
+
+/* testing Details sections / combo of index.html and dynamically generated elements */
+
+#searchResultsContainer {
+    padding-top: 1em;
     /* border: 1px solid red; */
 }
 
-/* @media screen and (min-width: 768) {
-    
+.justify-between {
+    justify-content: space-between;
 }
 
-@media screen and (min-width: 1085) {
-    
+.align-center {
+    align-items: center;
 }
 
-@media screen and (min-width: 1190) {
-        
-} */
+/* #plotSumContainer {
+    border: 1px solid blue;
+}
 
-/* @media screen and (width >= 1281) {
-    main {
-        min-width: 85%;
-        max-width: 90%;
-        border: 1px dashed red;
-    }
-    aside {
-        border: 1px solid red;
-    }
+#searchResultsContainer p {
+    border: 1px solid red;
 } */

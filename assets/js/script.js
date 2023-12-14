@@ -261,7 +261,7 @@ function renderCredits(credits) {
 // Function to render the cast list and listen to click on their name to give more detail on them.
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
-  castListEl.innerHTML = "Cast: ";
+  castListEl.innerHTML = "CAST: ";
 
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
@@ -314,18 +314,12 @@ function renderDetails(selectedData, userCategory) {
 
     // insert HTML creating Movie/TV Detail elements
     const htmlStr = `<h2>${title || name}</h2>
-    <div class="display-flex-column-maybe??">
-      <div id="plotSumContainer">
         <h3>Plot Summary</h3>
         <p>${overview}</p>
-      </div>
-      <div id="additionalData">
         <p>Release Date: <span>${release_date || first_air_date}</span></p>
         <p>Rating: <span id="rating"></span></p>
         <ul id="directorsOrSeasons"></ul>
-        <ul id="castList">Cast: </ul>
-      </div>
-    </div>`;
+        <ul id="castList"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
