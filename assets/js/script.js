@@ -263,11 +263,13 @@ function renderCredits(credits) {
 // Function to render the cast list and listen to click on their name to give more detail on them.
 function renderCastList(cast) {
   const castListEl = document.querySelector("#castList");
-  castListEl.innerHTML = "CAST: ";
-
+  castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+    const htmlStr = 
+      `<li class="col align-center" id="cast-${i}">
+        ${cast[i].name} as ${cast[i].character}
+      </li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
     // Event listener to fetch the detail of the cast
@@ -280,7 +282,22 @@ function renderCastList(cast) {
 }
 
 // Function to render the seasons list
-function renderSeasonList(seasons) {}
+function renderSeasonList(seasons) {
+  const tvSeasonsEl = document.querySelector("#directorsOrSeasons");
+
+  tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
+  for (let i = 1; i < seasons.length; i++) {
+    const season = seasons[i];
+    const seasonDetailHtml =
+      `<li class='col align-center'>
+        <p>${season.name}</p>
+        <img src="https://image.tmdb.org/t/p/w92${season.poster_path}">
+        <p>Episode Count: ${season.episode_count}</p>
+      </li>`;
+    tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetailHtml);
+  }
+}
+
 
 // Main rendering function
 function renderDetails(selectedData, userCategory) {
@@ -303,6 +320,7 @@ function renderDetails(selectedData, userCategory) {
     videos,
     release_dates,
     content_ratings,
+    seasons
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -318,10 +336,10 @@ function renderDetails(selectedData, userCategory) {
     const htmlStr = `<h2>${title || name}</h2>
         <h3>Plot Summary</h3>
         <p>${overview}</p>
-        <p>Release Date: <span>${release_date || first_air_date}</span></p>
-        <p>Rating: <span id="rating"></span></p>
-        <ul id="directorsOrSeasons"></ul>
-        <ul id="castList"></ul>`;
+        <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
+        <h3>Rating: <span id="rating"></span></h3>
+        <ul id="castList" class="row"></ul>
+        <ul id="directorsOrSeasons" class="row"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
@@ -343,7 +361,10 @@ function renderDetails(selectedData, userCategory) {
         ? release_dates.results
         : content_ratings.results;
     renderRating(ratings, userCategory);
-
+    
+    if (seasons) {
+      renderSeasonList(seasons);
+    }
     // render Person details
   } else {
     // sets visibility of video and streaming options elements to none
@@ -525,7 +546,7 @@ addEventListener("DOMContentLoaded", () => {
       // reset modal ulEl
       const ulEl = document.getElementById("thumbList");
       ulEl.innerHTML = "";
-      
+
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";

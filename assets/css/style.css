@@ -30,6 +30,11 @@ h1 {
     margin-bottom: 2rem;
 }
 
+h3 span {
+    font-size: 16px;
+    font-weight: 400;
+}
+
 form {
     padding-bottom: 1rem;
 }
@@ -40,7 +45,18 @@ ul {
 
 ul li {
     padding-right: 0.5rem;
-    
+    display: inline;
+    /* border: 1px solid blue; */
+}
+
+li div {
+    /* border: 1px solid red; */
+    display: inline;
+}
+
+li img {
+    display: inline;
+    width: min-content;
 }
 
 footer {
@@ -108,6 +124,10 @@ footer {
 
 .align-center {
     align-items: center;
+}
+
+.gap {
+    gap: 1em;
 }
 
 /* #plotSumContainer {
