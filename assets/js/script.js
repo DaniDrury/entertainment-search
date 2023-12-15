@@ -323,13 +323,36 @@ function renderTvSeasonList(seasons) {
 }
 
 function renderStreamingOption(providers){
+  const insertLi = watchOptions => {
+    let liHtmlStr = "";
+    for (let i = 0; i<watchOptions.length; i++){ 
+      const imgUrl =
+      `https://image.tmdb.org/t/p/w45${watchOptions[i].logo_path}`;
+      
+      liHtmlStr += 
+      `<li>
+      <img src="${imgUrl}">
+      </li>`;
+
+    } 
+    return liHtmlStr;
+
+  }
+
   const streamingListEl = document.querySelector("#streamingList");
   console.log(providers);
-  for(let i=0; i<providers.length;i++){
-    const watchOption = providers[i];
-    console.log(watchOption);
 
-
+  for (key in providers) {
+    if( key==="link"){
+      continue;
+    }
+    const watchOptions = providers[key];
+    console.log(key, watchOptions);
+    const ulHtmlStr = 
+      `<h4>${key}</h4>
+      <ul>${insertLi(watchOptions)}</ul>
+    `
+    streamingListEl.insertAdjacentHTML("beforeend", ulHtmlStr);
   }
 }
 
@@ -402,7 +425,7 @@ function renderDetails(selectedData, userCategory) {
       renderTvSeasonList(seasons);
     }
 
-    console.log("Providers", providers);
+    //console.log("Providers", providers);
     if(providers.results.US){
       renderStreamingOption(providers.results.US)
     }
