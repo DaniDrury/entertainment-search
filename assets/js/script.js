@@ -322,6 +322,16 @@ function renderTvSeasonList(seasons) {
   }
 }
 
+function renderStreamingOption(providers){
+  const streamingListEl = document.querySelector("#streamingList");
+  console.log(providers);
+  for(let i=0; i<providers.length;i++){
+    const watchOption = providers[i];
+    console.log(watchOption);
+
+
+  }
+}
 
 // Main rendering function
 function renderDetails(selectedData, userCategory) {
@@ -333,7 +343,8 @@ function renderDetails(selectedData, userCategory) {
   selectedDetailEL.innerHTML = "";
 
   // Destructure the selectedData object
-  const {
+  const { 
+    ["watch/providers"] :providers,
     poster_path,
     profile_path,
     title,
@@ -389,6 +400,11 @@ function renderDetails(selectedData, userCategory) {
 
     if (seasons) {
       renderTvSeasonList(seasons);
+    }
+
+    console.log("Providers", providers);
+    if(providers.results.US){
+      renderStreamingOption(providers.results.US)
     }
     // render Person details
   } else {
