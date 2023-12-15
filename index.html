@@ -40,14 +40,6 @@
         <p></p>
         <ul class="row"></ul>
       </div>
-
-      <div id="logoContainer" class="pure-u-1-2 pure-u-md-2-3 pure-u-lg-1-2">
-        <h2>Powered By:</h2>
-        <img class="pure-u-1"
-          src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
-          alt="TMDB Logo" />
-        <img class="pure-u-1" src="./assets/images/yt_logo_rgb_dark.png" alt="YouTube Logo" />
-      </div>
     </aside>
 
     <!-- Landing Section -->
@@ -60,7 +52,7 @@
         <div id="posterContainer" class="pure-u-1-4">
           <img src="" alt="poster image" id="posterImg" class="pure-img" />
           <div id="playerAndStream">
-            <button id="trailerModal">Play Trailer</button>
+            <button id="trailerModalBtn" class="pure-button">Play Trailer</button>
             <div id="streamingContainer">
               <h3>Streaming Options</h3>
               <ul id="streamingList"></ul>
@@ -100,8 +92,17 @@
     </div>
   </div>
 
-  <footer class="row">
-    <p>&copy Character Coders 2023</p>
+  <footer class="pure-g">
+    <div id="logoContainer" class="pure-u-1-2 pure-u-md-1-5 row">
+      <h2>Powered By:</h2>
+      <img class="pure-u-1"
+        src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+        alt="TMDB Logo" />
+      <img class="pure-u-1" src="./assets/images/yt_logo_rgb_dark.png" alt="YouTube Logo" />
+    </div>
+    <div class="pure-u-1 pure-u-md-3-4">
+      <p>&copy Character Coders 2023</p>
+    </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

@@ -18,7 +18,7 @@ main {
 body {
     min-height: 100vh;
     align-items: center;
-    justify-content: center;
+    /* justify-content: center; */
 }
 
 /* MAY NEED TO REMOVE */
@@ -61,9 +61,17 @@ li img {
 }
 
 footer {
-    height: 10vh;
-    align-items: center;
+    height: 5vh;
+    align-items: end;
     font-weight: bold;
+    text-align: center;
+}
+
+footer p {
+    padding: 1rem 0;
+}
+.modal-content {
+    color: black;
 }
 
 .display-none {
@@ -80,8 +88,16 @@ footer {
     flex-flow: column wrap;
 }
 
-.modal-content {
-    color: black;
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.gap {
+    gap: 1em;
 }
 
 #mediaSelect {
@@ -102,6 +118,10 @@ footer {
     padding-top: 2rem;
 }
 
+/* #logoContainer h2 {
+    display: inline;
+} */
+
 #logoContainer img {
     padding: 1rem 0 0 0;
 }
@@ -110,30 +130,24 @@ footer {
     background-image: url("../images/jpg-collage-dark-1600x900.jpg");
     background-position: center;
     background-repeat: no-repeat;
+    margin-top: 3rem;
 }
-
-/* testing Details sections / combo of index.html and dynamically generated elements */
 
 #searchResultsContainer {
     padding-top: 1em;
 }
 
-.justify-between {
-    justify-content: space-between;
+#posterImg {
+    padding-bottom: 1em;
 }
 
-.align-center {
-    align-items: center;
+#trailerModalBtn {
+    width: 90%;
+    border-radius: 1em;
+    background-color: rgb(161, 96, 223);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-wrap: wrap;
+    margin-bottom: 1rem;
 }
-
-.gap {
-    gap: 1em;
-}
-
-/* #plotSumContainer {
-    border: 1px solid blue;
-}
-
-#searchResultsContainer p {
-    border: 1px solid red;
-} */
