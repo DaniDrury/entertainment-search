@@ -261,7 +261,9 @@ function renderCastList(cast) {
 
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const htmlStr = `<li id="cast-${i}"><a>${cast[i].name} as ${cast[i].character}</a></li>`;
+    const htmlStr = `<li id="cast-${i}">
+    <img src="https://image.tmdb.org/t/p/w92${cast[i].profile_path}">
+    <p>${cast[i].name} <br>as ${cast[i].character}</p></li>`;
     castListEl.insertAdjacentHTML("beforeend", htmlStr);
 
     // Event listener to fetch the detail of the cast
@@ -278,11 +280,9 @@ function renderDetails(selectedData, userCategory) {
   // DOM selectors
   const selectedDetailEL = document.querySelector("#selectedDetail");
   const playerAndStreamEl = document.querySelector("#playerAndStream");
-  const tvSeasonsEl =document.querySelector("#seasonInformationContainer");
  
   // Reset the element
   selectedDetailEL.innerHTML = "";
- tvSeasonsEl.innerHTML= "";
 
   // Destructure the selectedData object
   const {
@@ -339,13 +339,17 @@ function renderDetails(selectedData, userCategory) {
 
     //render tv seasons
     if(seasons){
+      const tvSeasonsEl =document.querySelector("#directorsOrSeasons");
+
       tvSeasonsEl.insertAdjacentHTML("beforeend", "<h2>Seasons information</h2>"); 
-      
-      for(let i=0;i<seasons.length;i++){
+      for(let i=1;i<seasons.length;i++){
        const season= seasons[i];
-       const seasonDetail= `<p>${season.name}<br>Number of Episodes:
-       ${season.episode_count}
-       </p>`;
+       const seasonDetail= `<li>
+       <img src="https://image.tmdb.org/t/p/w92${season.poster_path}">
+       <h3>${season.name} : ${season.air_date}</h3>
+       <p>Number of Episodes: ${season.episode_count}</p>
+       ${season.overview ? `<p>Overview: ${season.overview}</p>` :""}
+       </li>`;
        tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetail); 
       }
    }
