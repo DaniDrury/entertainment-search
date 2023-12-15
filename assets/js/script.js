@@ -355,6 +355,10 @@ function renderStreamingOption(providers){
     streamingListEl.insertAdjacentHTML("beforeend", ulHtmlStr);
   }
 }
+ 
+function renderMovieDirector(crews){
+
+}
 
 // Main rendering function
 function renderDetails(selectedData, userCategory) {
@@ -405,7 +409,9 @@ function renderDetails(selectedData, userCategory) {
 
     renderMovieTvCastList(credits.cast);
     loadTrailer(videos.results);
-
+    if (userCategory==="movie"){
+      renderMovieDirector(credits.crew);                   
+    }
     // Render either the seasons list or directors list
     // depending on TV or Movie
     if (userCategory === "tv") {
