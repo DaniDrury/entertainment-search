@@ -2,19 +2,22 @@
 const resultDisplayEl = document.querySelector("#searchResultsContainer");
 const landingPageEl = document.querySelector("#landingPage");
 const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
+const myModalEl = document.getElementById('staticBackdrop');
+const modalContentEl = document.querySelector('.modal-content');
 const modalh3El = document.querySelector(".modal-header h3");
 const modalpEl = document.querySelector(".modal-body p");
+const resultListEl = document.getElementById("thumbList");
 
 // Global Variables
-let ytPlayer;
+let ytPlayer, ytPlayerEl;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
 function renderYouTubePlayer() {
   ytPlayer = new YT.Player("youtubePlayer", {
-    height: "390",
-    width: "640",
+    height: "720",
+    width: "1280",
     videoId: "",
     playerVars: {
       playsinline: 1,
@@ -22,6 +25,9 @@ function renderYouTubePlayer() {
     events: {
       onReady: () => {
         console.log("YouTube player loaded");
+        ytPlayerEl = document.getElementById('youtubePlayer');
+        // Hide the video after iframe creation
+        ytPlayerEl.setAttribute('hidden', '');
       },
       // 'onStateChange': onPlayerStateChange
     },
@@ -97,13 +103,24 @@ function renderSearchHistory() {
 
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
-  // Check if a video response exist, hide the player and exit the function if not
-  if (videosArr.length === 0) {
-    document.getElementById("youtubePlayer").setAttribute("hidden", "");
-    return;
-  } else {
-    document.getElementById("youtubePlayer").removeAttribute("hidden");
-  }
+  const trailerModalBtnEl = document.getElementById('trailerModalBtn');
+  trailerModalBtnEl.addEventListener('click', () => {
+    // Check if a video response exist, hide the player and exit the function if not
+    if (videosArr.length === 0) {
+      document.getElementById("youtubePlayer").setAttribute("hidden", "");
+      return;
+
+    } else {
+      // reset the modal
+      resultListEl.textContent = '';
+
+      document.getElementById("youtubePlayer").removeAttribute("hidden");
+      modalContentEl.style = 'background-color: black; width: min-content; transform: translate(-30%,0);'
+      myModal.show();
+
+      ytPlayer.playVideo();
+    }
+  });
 
   // Default to the 1st video in the array
   let trailerKey = videosArr[0].key;
@@ -441,10 +458,8 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
 
 // function to display top 5 results of search - allow user to select specific one
 function displayTop5(results, userCategory) {
-  // DOM selectors
-  const ulEl = document.getElementById("thumbList");
-  ulEl.innerHTML = "";
-  // reset modal <p> element
+  // reset modal
+  resultListEl.innerHTML = "";
   modalpEl.textContent = "";
 
   modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
@@ -476,13 +491,13 @@ function displayTop5(results, userCategory) {
       </div>
     </li>`;
     // Append the html string to the end of the Ul element
-    ulEl.insertAdjacentHTML("beforeend", top5Str);
+    resultListEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
     document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
       let selectedId = results[i].id;
       // Reset the modal list
-      ulEl.innerHTML = "";
+      resultListEl.innerHTML = "";
 
       //fetch selected detail
       fetchTmdbSelectedDetail(selectedId, userCategory);
@@ -511,9 +526,8 @@ async function fetchTmdbId(userCategory, userInput) {
 
       // If there's only one result
     } else if (responseData.results.length === 0) {
-        // reset modal ulEl
-        const ulEl = document.getElementById("thumbList");
-        ulEl.innerHTML = "";
+        // reset modal
+        resultListEl.innerHTML = "";
   
         modalh3El.textContent = "Warning";
         modalpEl.innerHTML =
@@ -561,10 +575,10 @@ addEventListener("DOMContentLoaded", () => {
 
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
-      // reset modal ulEl
-      const ulEl = document.getElementById("thumbList");
-      ulEl.innerHTML = "";
+      // reset the modal
+      resultListEl.innerHTML = "";
 
+      // Set the modal for warning
       modalh3El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
@@ -574,6 +588,18 @@ addEventListener("DOMContentLoaded", () => {
 
     // fetchYoutubeTrailer(userInput);
     fetchTmdbId(userCategory, userInput);
+  });
+
+  // Reset the modal when it closes
+  myModalEl.addEventListener('hide.bs.modal', () => {
+    ytPlayer.pauseVideo();
+    ytPlayerEl.setAttribute('hidden', '');
+    modalContentEl.style.removeProperty("background-color");
+    modalContentEl.style.removeProperty("width");
+    modalContentEl.style.removeProperty("transform");
+    modalpEl.textContent = '';
+    modalh3El.textContent = '';
+    resultListEl.textContent = '';
   });
 });
 
