@@ -328,6 +328,7 @@ function renderDetails(selectedData, userCategory) {
   // DOM selectors
   const selectedDetailEL = document.querySelector("#selectedDetail");
   const playerAndStreamEl = document.querySelector("#playerAndStream");
+ 
   // Reset the element
   selectedDetailEL.innerHTML = "";
 
