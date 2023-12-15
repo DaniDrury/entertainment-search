@@ -10,18 +10,19 @@ html {
     background-color: black;
     color: white;
 }
-main {
-    min-width: 80%;
-    /* max-width: 90%; */
-}
 
 body {
     min-height: 100vh;
     align-items: center;
-    /* justify-content: center; */
+    justify-content: center;
 }
 
-/* MAY NEED TO REMOVE */
+main {
+    min-width: 80%;
+    /* max-width: 90%; */
+    min-height: 80%;
+}
+
 aside {
     padding-left: 1em;
 }
