@@ -17,7 +17,7 @@
 
 <body class="col">
   <main class="pure-g row">
-    <aside class="pure-u-1 pure-u-md-1-4">
+    <aside class="pure-u-1 pure-u-md-1-3 pure-u-lg-1-4">
       <div>
         <h1>Entertainment Search</h1>
         <form id="searchForm" class="pure-form pure-form-stacked">
@@ -43,15 +43,15 @@
     </aside>
 
     <!-- Landing Section -->
-    <section id="landingPage" class="pure-u-1 pure-u-md-3-4"></section>
+    <section id="landingPage" class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4"></section>
 
     <!-- Result Section -->
-    <section id="searchResultsContainer" class="pure-u-1 pure-u-md-3-4" hidden>
+    <section id="searchResultsContainer" class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4" hidden>
       <!-- Poster and Bio -->
       <div class="pure-g">
-        <div id="posterContainer" class="pure-u-1-4">
+        <div id="posterContainer" class="pure-u-1 pure-u-md-1-2 pure-u-lg-1-3 col align-center">
           <img src="" alt="poster image" id="posterImg" class="pure-img" />
-          <div id="playerAndStream">
+          <div id="playerAndStream" class="col align-center">
             <button id="trailerModalBtn" class="pure-button">Play Trailer</button>
             <div id="streamingContainer">
               <h3>Streaming Options</h3>
@@ -59,20 +59,25 @@
             </div>
           </div>
         </div>
-        <article id="selectedDetail" class="pure-u-3-4 col gap"></article>
+        <article id="selectedDetail" class="pure-u-1 pure-u-md-1-2 pure-u-lg-2-3 col gap"></article>
       </div>
-      <!-- Trailer and streaming options -->
-      <!-- <section id="playerAndStream">
-        <div class="row">
-          <div id="youtubePlayer"></div>
-          <div id="streamingContainer">
-            <h3>Streaming Options</h3>
-            <ul id="streamingList"></ul>
-          </div>
-        </div>
-      </section> -->
     </section>
   </main>
+
+  <footer class="pure-g">
+    <div id="logoContainer" class="pure-u-1 pure-u-md-1-3 pure-u-lg-1-4 row">
+      <h2>Powered By:</h2>
+      <div class="row">
+        <img class="pure-img"
+          src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
+          alt="TMDB Logo" />
+        <img class="pure-img" src="./assets/images/yt_logo_rgb_dark.png" alt="YouTube Logo" />
+      </div>
+    </div>
+    <div class="pure-u-1 pure-u-md-2-3 pure-u-lg-3-4">
+      <p>&copy Character Coders 2023</p>
+    </div>
+  </footer>
 
   <!-- Pop-Up Modal for User to Select Specific Choice after Search -->
   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="true" tabindex="-1">
@@ -91,19 +96,6 @@
       </div>
     </div>
   </div>
-
-  <footer class="pure-g">
-    <div id="logoContainer" class="pure-u-1-2 pure-u-md-1-5 row">
-      <h2>Powered By:</h2>
-      <img class="pure-u-1"
-        src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg"
-        alt="TMDB Logo" />
-      <img class="pure-u-1" src="./assets/images/yt_logo_rgb_dark.png" alt="YouTube Logo" />
-    </div>
-    <div class="pure-u-1 pure-u-md-3-4">
-      <p>&copy Character Coders 2023</p>
-    </div>
-  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"

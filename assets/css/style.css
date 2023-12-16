@@ -12,15 +12,13 @@ html {
 }
 
 body {
-    min-height: 100vh;
-    align-items: center;
-    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    justify-content: space-between;
 }
 
 main {
-    min-width: 80%;
-    /* max-width: 90%; */
-    min-height: 80%;
+    min-width: 100%;
 }
 
 aside {
@@ -62,7 +60,7 @@ li img {
 }
 
 footer {
-    height: 5vh;
+    height: fit-content;
     align-items: end;
     font-weight: bold;
     text-align: center;
@@ -87,7 +85,7 @@ footer p {
 
 .col {
     display: flex;
-    flex-flow: column wrap;
+    flex-flow: column nowrap;
 }
 
 .justify-between {
@@ -104,35 +102,33 @@ footer p {
 
 #mediaSelect {
     margin-bottom: 1rem;
-    width: 80%;
+    width: 90%;
 }
 
 #searchInput {
     margin-bottom: 1rem;
-    width: 80%;
+    width: 90%;
 }
 
 #searchBtn {
-    width: 80%;
+    width: 90%;
 }
 
 #logoContainer {
-    padding-top: 2rem;
+    padding-left: 1rem;
 }
 
-/* #logoContainer h2 {
-    display: inline;
-} */
-
 #logoContainer img {
-    padding: 1rem 0 0 0;
+    padding: 0 1rem 0 0;
+    display: inline;
+    width: 50%;
 }
 
 #landingPage {
     background-image: url("../images/jpg-collage-dark-1600x900.jpg");
     background-position: center;
     background-repeat: no-repeat;
-    margin-top: 3rem;
+    margin-top: 1.5rem;
 }
 
 #searchResultsContainer {
@@ -152,4 +148,55 @@ footer p {
     font-weight: bold;
     text-wrap: wrap;
     margin-bottom: 1rem;
+}
+
+#streamingContainer {
+    padding-left: 1em;
+}
+
+#selectedDetail {
+    padding: 1em 1em;
+}
+
+/* medium */
+@media screen and (min-width:768px) {
+    #posterImg {
+        padding-bottom: 1em;
+        padding-left: 1em;
+    }
+}
+
+/* large */
+@media screen and (min-width:1024px) {
+    #trailerModalBtn {
+        width: 80%;
+    }
+}
+
+/* xxl */
+@media screen and (min-width:1920px) {
+    body {
+        align-items: center;
+    }
+    
+    main {
+        min-width: 80%;
+        max-width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    footer {
+        max-width: 80%;
+    }
+
+    #mediaSelect {
+        margin-bottom: 1rem;
+        width: 80%;
+    }
+    
+    #searchInput {
+        margin-bottom: 1rem;
+        width: 80%;
+    }
 }
