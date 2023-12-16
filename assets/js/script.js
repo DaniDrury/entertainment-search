@@ -357,7 +357,22 @@ function renderStreamingOption(providers){
 }
  
 function renderMovieDirector(crews){
+  const directorEl = document.querySelector("#directorsOrSeasons");
 
+  const result = crews.filter((crew) => crew.job ==='Director');
+ 
+  directorEl.insertAdjacentHTML("beforebegin","<h3>Director:</h3>");
+
+  for(let i=0; i<result.length ;i++){
+    const imgUrl =`https://image.tmdb.org/t/p/w92${result[i].profile_path}`;
+    const htmlStr = 
+    `<li>
+     <img src="${imgUrl}">
+     <p>${result[i].name}</p>
+    </li>`;
+    
+    directorEl.insertAdjacentHTML("beforeend",htmlStr);
+  }
 }
 
 // Main rendering function
