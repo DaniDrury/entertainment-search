@@ -359,14 +359,14 @@ function renderStreamingOption(providers, searchName){
 
   const streamingListEl = document.querySelector("#streamingList");
   streamingListEl.textContent = '';
-  console.log(providers);
+  // console.log(providers);
 
   for (key in providers) {
     if( key==="link"){
       continue;
     }
     const watchOptions = providers[key];
-    console.log(key, watchOptions);
+    // console.log(key, watchOptions);
     const ulHtmlStr = 
       `<h4>${key}</h4>
       <ul>${insertLi(watchOptions)}</ul>
@@ -378,19 +378,25 @@ function renderStreamingOption(providers, searchName){
 function renderMovieDirector(crews){
   const directorEl = document.querySelector("#directorsList");
 
-  const result = crews.filter((crew) => crew.job ==='Director');
+  const resultArr = crews.filter((crew) => crew.job === 'Director');
+  // console.log(resultArr);
  
   directorEl.insertAdjacentHTML("beforebegin","<h3>Director:</h3>");
+  for (let i = 0; i < resultArr.length; i++){
+    const { id, name, profile_path } = resultArr[i];
 
-  for(let i=0; i<result.length ;i++){
-    const imgUrl =`https://image.tmdb.org/t/p/w92${result[i].profile_path}`;
+    const imgUrl =`https://image.tmdb.org/t/p/w92${profile_path}`;
     const htmlStr = 
     `<li>
-     <img src="${imgUrl}">
-     <p>${result[i].name}</p>
+     <img id="director-${i}" src="${imgUrl}">
+     <p>${name}</p>
     </li>`;
     
-    directorEl.insertAdjacentHTML("beforeend",htmlStr);
+    directorEl.insertAdjacentHTML("beforeend", htmlStr);
+    
+    document.querySelector(`#director-${i}`).addEventListener('click', () => {
+      fetchTmdbSelectedDetail(id, 'person');
+    })
   }
 }
 
@@ -445,18 +451,11 @@ function renderDetails(selectedData, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderMovieTvCastList(credits.cast);
-    loadTrailer(videos.results);
-    if (userCategory==="movie"){
-      renderMovieDirector(credits.crew);                   
-    }
-    // Render either the seasons list or directors list
-    // depending on TV or Movie
-    if (userCategory === "tv") {
-      // renderSeasonList(selectedData.seasons);
-    } else {
-      // renderDirectorList();
-    }
+    // load a YT trailer for the selected tv/movie if exist
+    // hide the button if doesn't
+    videos.results.length !== 0
+      ? loadTrailer(videos.results)
+      : playerAndStreamEl.firstElementChild.setAttribute('hidden', '');
 
     // Get the right response data for the rating
     const ratings =
@@ -468,6 +467,12 @@ function renderDetails(selectedData, userCategory) {
     if (seasons) {
       renderTvSeasonList(seasons);
     }
+
+    if (userCategory==="movie"){
+      renderMovieDirector(credits.crew);                   
+    }
+
+    renderMovieTvCastList(credits.cast);
 
     //console.log("Providers", providers);
     if(providers.results.US){
