@@ -128,7 +128,7 @@ footer p {
     background-image: url("../images/jpg-collage-dark-1600x900.jpg");
     background-position: center;
     background-repeat: no-repeat;
-    margin-top: 1.5rem;
+    height: 90vh;
 }
 
 #searchResultsContainer {
