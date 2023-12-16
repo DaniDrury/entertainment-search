@@ -621,7 +621,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
       // Destructure episode object
       const { air_date, name, overview, still_path, episode_number } = episodeOjb;
 
-      const imgUrl = still_path ? `https://image.tmdb.org/t/p/w92${still_path}` : ``;
+      const imgUrl = still_path ? `https://image.tmdb.org/t/p/w185${still_path}` : ``;
 
       // Insert html string into the modal list
       const episodeHtmlStr =
