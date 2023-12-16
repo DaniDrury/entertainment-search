@@ -235,7 +235,9 @@ function renderPersonCastCredits(castArr) {
   for (let i = 0; i < castArr.length && i < limit; i++) {
     // Deconstruct cast object & create Li elements
     const { character, id, media_type, title, poster_path } = castArr[i];
-    const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
+    const imgUrl = poster_path
+      ? `https://image.tmdb.org/t/p/w92${poster_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 
     // skip responses where there's no poster
     if (!poster_path) {
@@ -304,7 +306,9 @@ function renderPersonCrewCredits(crewArr) {
   // deconstruct crewArray objects and create li items for each
   crewArray.forEach((crew) => {
     const { job, title, id, media_type, poster_path } = crew;
-    const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
+    const imgUrl = poster_path
+    ? `https://image.tmdb.org/t/p/w92${poster_path}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 
     const htmlStr =
     `<li id="crew-${id}">
@@ -415,7 +419,10 @@ function renderMovieDirector(crews){
   for (let i = 0; i < resultArr.length; i++){
     const { id, name, profile_path } = resultArr[i];
 
-    const imgUrl =`https://image.tmdb.org/t/p/w92${profile_path}`;
+    const imgUrl = profile_path
+      ? `https://image.tmdb.org/t/p/w92${profile_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    
     const htmlStr = 
     `<li>
      <img id="director-${i}" src="${imgUrl}">
