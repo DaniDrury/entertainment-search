@@ -532,11 +532,13 @@ function renderDetails(selectedData, userCategory) {
     renderPersonCrewCredits(crew);
   }
 
+  // Scroll to the top of the poster
+  document.querySelector('#posterImg').scrollIntoView({behavior: "smooth"});
+
   // Hide landing page and show result page
   landingPageEl.setAttribute("hidden", "");
   resultDisplayEl.removeAttribute("hidden");
 }
-
 //#endregion Misc Functions
 
 //#region TMDB API
