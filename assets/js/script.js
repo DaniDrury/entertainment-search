@@ -8,16 +8,23 @@ const modalh3El = document.querySelector(".modal-header h3");
 const modalpEl = document.querySelector(".modal-body p");
 const resultListEl = document.getElementById("thumbList");
 
+// YouTube DOM
+let ytPlayer, ytPlayerEl = document.querySelector('#youtubePlayer');
+
 // Global Variables
-let ytPlayer, ytPlayerEl;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
 function renderYouTubePlayer() {
+  const playerResize = () => {
+    ytPlayerEl.style.height = `min(${(window.innerWidth * .9) * 9 / 16}px, 1080px)`;
+    ytPlayerEl.style.width = `min(${window.innerWidth * .9}px, 1920px)`;
+  };
+
   ytPlayer = new YT.Player("youtubePlayer", {
-    height: `${window.innerHeight * .5}`,
-    width: `${window.innerWidth * .45}`,
+    height: `480`,
+    width: `640`,
     videoId: "",
     playerVars: {
       playsinline: 1,
@@ -25,11 +32,16 @@ function renderYouTubePlayer() {
     events: {
       onReady: () => {
         console.log("YouTube player loaded");
-        ytPlayerEl = document.getElementById('youtubePlayer');
+        ytPlayerEl = document.querySelector('#youtubePlayer');
         // Hide the video after iframe creation
         ytPlayerEl.setAttribute('hidden', '');
+
+        // resize youtube player size on window resize
+        addEventListener("resize", () => {
+          playerResize();
+        });
       },
-      // 'onStateChange': onPlayerStateChange
+      'onStateChange': playerResize()
     },
   });
 }
@@ -107,6 +119,7 @@ function renderSearchHistory() {
 function loadTrailer(videosArr) {
   // DOM Selectors
   const trailerModalBtnEl = document.getElementById('trailerModalBtn');
+  trailerModalBtnEl.removeAttribute('hidden');
 
   // Show the play trailer button if trailer exist ie. function was called
   trailerModalBtnEl.removeAttribute('hidden');
@@ -149,9 +162,12 @@ function loadTrailer(videosArr) {
     resultListEl.textContent = '';
     ytPlayerEl.removeAttribute("hidden");
 
+    // Style the modal for the player
     modalContentEl.style = 'background-color: black; width: min-content;'
-    myModal.show();
+    modalContentEl.parentElement.style.maxWidth = 'min-content';
 
+    // Start the video when modal open
+    myModal.show();
     ytPlayer.playVideo();
   });
 }
@@ -357,6 +373,9 @@ function renderStreamingOption(providers, searchName){
 
   }
 
+  // Show the h3 with Streaming Options
+  document.getElementById('streamingContainer').removeAttribute('hidden');
+
   const streamingListEl = document.querySelector("#streamingList");
   streamingListEl.textContent = '';
   // console.log(providers);
@@ -475,9 +494,10 @@ function renderDetails(selectedData, userCategory) {
     renderMovieTvCastList(credits.cast);
 
     //console.log("Providers", providers);
-    if(providers.results.US){
-      renderStreamingOption(providers.results.US, name || title)
-    }
+    providers.results.US
+      ? renderStreamingOption(providers.results.US, name || title)
+      : document.getElementById('streamingContainer').setAttribute('hidden', '');
+
     // render Person details
   } else {
     // sets visibility of video and streaming options elements to none
@@ -688,7 +708,7 @@ addEventListener("DOMContentLoaded", () => {
     ytPlayerEl.setAttribute('hidden', '');
     modalContentEl.style.removeProperty("background-color");
     modalContentEl.style.removeProperty("width");
-    modalContentEl.style.removeProperty("transform");
+    modalContentEl.parentElement.style.maxWidth = '500px';
     modalpEl.textContent = '';
     modalh3El.textContent = '';
     resultListEl.textContent = '';
