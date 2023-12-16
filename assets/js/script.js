@@ -4,9 +4,9 @@ const landingPageEl = document.querySelector("#landingPage");
 const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
 const myModalEl = document.getElementById('staticBackdrop');
 const modalContentEl = document.querySelector('.modal-content');
-const modalh3El = document.querySelector(".modal-header h3");
-const modalpEl = document.querySelector(".modal-body p");
-const resultListEl = document.getElementById("thumbList");
+const modalh2El = document.querySelector(".modal-header h2");
+const modalpEl = document.querySelector(".modal-body > p");
+const modalListEl = document.getElementById("thumbList");
 
 // YouTube DOM
 let ytPlayer, ytPlayerEl = document.querySelector('#youtubePlayer');
@@ -114,6 +114,7 @@ function renderSearchHistory() {
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
       //fetch selected detail
       addHistory(selectedData, userCategory);
+      console.log(`Search history: selected ${userCategory} details: `, selectedData);
     });
   }
 }
@@ -162,7 +163,7 @@ function loadTrailer(videosArr) {
     }
 
     // reset the modal and show the youtube player
-    resultListEl.textContent = '';
+    modalListEl.textContent = '';
     ytPlayerEl.removeAttribute("hidden");
 
     // Style the modal for the player
@@ -355,19 +356,26 @@ function renderMovieTvCastList(cast) {
 }
 
 // Function to render the seasons list
-function renderTvSeasonList(seasons) {
+function renderTvSeasonList(seasons, selectedId) {
   const tvSeasonsEl = document.querySelector("#seasonsList");
 
   tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
   for (let i = 1; i < seasons.length; i++) {
-    const season = seasons[i];
+    // Deconstruct season object
+    const { name, poster_path, episode_count, season_number } = seasons[i];
+
     const seasonDetailHtml =
       `<li class='col align-center'>
-        <p>${season.name}</p>
-        <img src="https://image.tmdb.org/t/p/w92${season.poster_path}">
-        <p>Episode Count: ${season.episode_count}</p>
+        <p>${name}</p>
+        <img id="seasonListItem-${i}" src="https://image.tmdb.org/t/p/w92${poster_path}">
+        <p>Episode Count: ${episode_count}</p>
       </li>`;
     tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetailHtml);
+
+    // Event listener for click on the poster
+    document.querySelector(`#seasonListItem-${i}`).addEventListener('click', () => {
+      fetchTmdbSeasonDetail(selectedId, season_number)
+    });
   }
 }
 
@@ -461,7 +469,8 @@ function renderDetails(selectedData, userCategory) {
     release_dates,
     content_ratings,
     seasons,
-    runtime
+    runtime,
+    id: selectedId
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -502,7 +511,7 @@ function renderDetails(selectedData, userCategory) {
     renderRatingRuntime(ratings, runtime);
 
     if (seasons) {
-      renderTvSeasonList(seasons);
+      renderTvSeasonList(seasons, selectedId);
     }
 
     if (userCategory==="movie"){
@@ -546,10 +555,8 @@ function renderDetails(selectedData, userCategory) {
   // Scroll to the top of the poster
   document.querySelector('#posterImg').scrollIntoView({behavior: "smooth"});
 }
-//#endregion Misc Functions
 
-//#region TMDB API
-// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+// Function to add to the browser history list and call renderDetails
 function addHistory(selectedData, userCategory) {
   // Set the parameters for the page history to come back to
   const stateHistory = {
@@ -565,20 +572,110 @@ function addHistory(selectedData, userCategory) {
   // Fetch the selection detail if Id was pass into the function
   if (selectedData) {
     renderDetails(selectedData, userCategory);
+    // console.log(`Added to browser history: `, selectedData);
+  }
+}
+//#endregion Misc Functions
 
-    console.log(selectedData);
+//#region TMDB API
+// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
+  // This function is called when user click on the episode list inside the modal
+  const fetchTmdbEpisodeDetail = async (seriesId, seasonNumber, episode_number) => {
+    const fetchUrl =
+    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits`;
+
+    try {
+      const response = await fetch(fetchUrl);
+      const episodeData = await response.json();
+      console.log(seriesId, seasonNumber, episode_number);
+      console.log(`Fetched selected episode data`, episodeData);
+
+      // Save reponse data to localStorage and add to history
+      // saveSearchHistory(episodeData, 'tv');
+      // addHistory(episodeData, 'tv');
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // This function is called after fetching the data about the selected season
+  const displaySeasonDetail = seasonDataObj => {
+    // Destructuring season object
+    const { episodes, name, overview } = seasonDataObj;
+
+    // reset modal
+    modalListEl.innerHTML = "";
+    modalpEl.textContent = "";
+
+    // Set the title of the modal
+    modalh2El.textContent = `${name}`;
+    if (overview) {
+      modalh2El.insertAdjacentHTML('beforeend', `<h4 style="font-size: .8em;">Season Overview: <p style="font-weight: 400; font-size: 16px;">${overview}</p></h4>`)
+    }
+
+    // Display the episodes for selected season
+    modalListEl.insertAdjacentHTML('beforeend', `<h3>Episodes:</h3><br>`);
+    episodes.forEach((episodeOjb, i) => {
+      // Destructure episode object
+      const { air_date, name, overview, still_path, episode_number } = episodeOjb;
+
+      const imgUrl = still_path ? `https://image.tmdb.org/t/p/w92${still_path}` : ``;
+
+      // Insert html string into the modal list
+      const episodeHtmlStr =
+      `<li id="episode-${i}" class="clickable">
+        <div class="pure-g">
+          <div class="pure-u-1-3"><img src="${imgUrl}"></div>
+          <div class="pure-u-2-3 col justify-around align-start gap">
+            <h4>${episode_number}.${name}</h4>
+            <h5>Release Date: <span>${air_date}</span></h5>
+            <h5>Episode Overview:</h5>
+            <p class="text-left">${overview}</p><br>
+          </div>
+        </div>
+      </li>`;
+      modalListEl.insertAdjacentHTML('beforeend', episodeHtmlStr);
+
+      document.querySelector(`#episode-${i}`).addEventListener('click', () => {
+        // Fetch the selected episode data and hide the modal
+        fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number);
+        myModal.hide();
+      });
+    });
+
+    // Style the modal and show
+    modalContentEl.parentElement.style.maxWidth = '70vw';
+    myModal.show();
+  };
+
+  // Fetch the selected season detail
+  const fetchUrl =
+    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=images`;
+
+  try {
+    const response = await fetch(fetchUrl);
+    const seasonData = await response.json();
+    console.log(seriesId, seasonNumber);
+    console.log(`Fetched selected season data`, seasonData);
+
+    // Display a modal with the selected season information
+    displaySeasonDetail(seasonData);
+
+  } catch (error) {
+    console.error(error);
   }
 }
 
 async function fetchTmdbSelectedDetail(selectedId, userCategory) {
-  console.log("Fetch selected data");
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
   try {
     const response = await fetch(url);
     const selectedData = await response.json();
-    console.log(`${userCategory} details: `, selectedData);
+    console.log(`Fetched: selected ${userCategory} details: `, selectedData);
 
     // Save reponse data to localStorage and add to history
     saveSearchHistory(selectedData, userCategory);
@@ -588,13 +685,15 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   }
 }
 
-// function to display top 5 results of search - allow user to select specific one
-function displayTop5(results, userCategory) {
-  // reset modal
-  resultListEl.innerHTML = "";
+// Function to fetch the movieId using the search string from the user
+async function fetchTmdbId(userCategory, userInput) {
+  // function to display top 5 results of search - allow user to select specific one
+  const displayTop5 = (results, userCategory) => {
+    // reset modal
+  modalListEl.innerHTML = "";
   modalpEl.textContent = "";
 
-  modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
+  modalh2El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
   console.log(results);
 
   // create and append 5 possible matches to user query
@@ -626,13 +725,13 @@ function displayTop5(results, userCategory) {
         </div>
       </li>`;
     // Append the html string to the end of the Ul element
-    resultListEl.insertAdjacentHTML("beforeend", top5Str);
+    modalListEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
     document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
       let selectedId = results[i].id;
       // Reset the modal list
-      resultListEl.innerHTML = "";
+      modalListEl.innerHTML = "";
 
       //fetch selected detail
       fetchTmdbSelectedDetail(selectedId, userCategory);
@@ -643,17 +742,14 @@ function displayTop5(results, userCategory) {
   }
   // Display the modal to the user
   myModal.show();
-}
-
-// Function to fetch the movieId using the search string from the user
-async function fetchTmdbId(userCategory, userInput) {
+  };
   // Create an url for an API call
   const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
   try {
     const response = await fetch(url);
     const responseData = await response.json();
-    console.log(`${userCategory} search: `, responseData);
+    console.log(`Fetched: ${userCategory} search result: `, responseData);
 
     // Display top 5 results for user to select the right movie
     if (responseData.results.length > 1) {
@@ -662,9 +758,9 @@ async function fetchTmdbId(userCategory, userInput) {
       // If there's only one result
     } else if (responseData.results.length === 0) {
         // reset modal
-        resultListEl.innerHTML = "";
+        modalListEl.innerHTML = "";
   
-        modalh3El.textContent = "Warning";
+        modalh2El.textContent = "Warning";
         modalpEl.innerHTML =
           "Could not find any exact matches - please check your spelling!";
         myModal.show();
@@ -711,10 +807,10 @@ addEventListener("DOMContentLoaded", () => {
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
       // reset the modal
-      resultListEl.innerHTML = "";
+      modalListEl.innerHTML = "";
 
       // Set the modal for warning
-      modalh3El.textContent = "Warning";
+      modalh2El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
       myModal.show();
@@ -733,8 +829,8 @@ addEventListener("DOMContentLoaded", () => {
     modalContentEl.style.removeProperty("width");
     modalContentEl.parentElement.style.maxWidth = '500px';
     modalpEl.textContent = '';
-    modalh3El.textContent = '';
-    resultListEl.textContent = '';
+    modalh2El.textContent = '';
+    modalListEl.textContent = '';
   });
 });
 

@@ -73,9 +73,6 @@ footer p {
     padding: 1rem 0;
 }
 
-.modal-content {
-    color: black;
-}
 
 .display-none {
     display: none;
@@ -103,8 +100,16 @@ footer p {
     align-items: center;
 }
 
+.align-start {
+    align-items: start;
+}
+
 .gap {
     gap: 1em;
+}
+
+.text-left {
+    text-align: left;
 }
 
 .clickable {
@@ -114,6 +119,19 @@ footer p {
 .historyItem {
     width: 92px;
     height: auto;
+}
+
+.modal-dialog {
+    overflow: initial;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto
+}
+
+.modal-content {
+    color: black;
 }
 
 #mediaSelect {
