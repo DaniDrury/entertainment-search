@@ -102,7 +102,10 @@ function renderSearchHistory() {
         : "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg";
 
     // Create the Li element with nested img
-    const htmlStr = `<li id="history-${i}"><img src="${imgUrl}"></li>`;
+    const htmlStr =
+      `<li id="history-${i}">
+        <img src="${imgUrl}" class='historyItem'>
+      </li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
@@ -211,24 +214,17 @@ function renderRatingRuntime(ratingsArr, runtime) {
 }
 
 // Function to render cast & crew credits for Person searches
-function renderPersonCredits(creditsObj) {
+function renderPersonCastCredits(castArr) {
   // DOM selectors
   const castUl = document.getElementById("castList");
-  const crewUl = document.getElementById("crewList");
 
-  // deconstruct credits into cast & crew
-  let { cast, crew } = creditsObj;
+  // Sort the cast by newest releases
+  castArr.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
 
-  // Sort the cast and crew by newest releases
-  cast.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-  crew.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-
-  // hiding either cast or crew UL element if no associated responses
-  if (cast.length === 0) {
+  // hiding cast UL element if none exist and exit function
+  if (castArr.length === 0) {
     castUl.setAttribute("hidden", "");
-  }
-  if (crew.length === 0) {
-    crewUl.setAttribute("hidden", "");
+    return;
   }
 
   // limiting responses to 10
@@ -236,9 +232,9 @@ function renderPersonCredits(creditsObj) {
 
   // Rendering cast credits
   castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
-  for (let i = 0; i < cast.length && i < limit; i++) {
+  for (let i = 0; i < castArr.length && i < limit; i++) {
     // Deconstruct cast object & create Li elements
-    const { character, id, media_type, title, poster_path } = cast[i];
+    const { character, id, media_type, title, poster_path } = castArr[i];
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
     // skip responses where there's no poster
@@ -261,16 +257,30 @@ function renderPersonCredits(creditsObj) {
       fetchTmdbSelectedDetail(id, media_type);
     });
   }
+}
+
+function renderPersonCrewCredits(crewArr) {
+  // DOM selectors
+  const crewUl = document.getElementById("crewList");
+
+  // Sort the crew by newest releases
+  crewArr.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+
+  // hiding crew UL element if none exist and exit function
+  if (crewArr.length === 0) {
+    crewUl.setAttribute("hidden", "");
+    return;
+  }
 
   // reset limit to 10 before crew credits
-  limit = 10;
+  let limit = 10;
 
   // create crewArray for purposes of looking for duplicate credits
-  let crewArray = crew[0].poster_path ? [crew[0]] : [];
+  let crewArray = crewArr[0].poster_path ? [crewArr[0]] : [];
 
   // deconstruct crew object & get 10 crew credits - combining duplicates into one listing with multiple jobs
-  for (let i = 1; i < crew.length && i < limit; i++) {
-    const { job, title, poster_path } = crew[i];
+  for (let i = 1; i < crewArr.length && i < limit; i++) {
+    const { job, title, poster_path } = crewArr[i];
     let skip = false;
 
     // look for duplicate title credits - combine job data to first title credit
@@ -287,7 +297,7 @@ function renderPersonCredits(creditsObj) {
       continue;
     }
     // add crew credit to crewArray if not a duplicate
-    crewArray.push(crew[i]);
+    crewArray.push(crewArr[i]);
   }
 
   crewUl.insertAdjacentHTML("beforeBegin", "<h3>Crew Credits: </h3>");
@@ -319,8 +329,9 @@ function renderMovieTvCastList(cast) {
   castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const imgUrl = cast[i].profile_path ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
-    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    const imgUrl = cast[i].profile_path
+      ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
     
     const htmlStr =
       `<li class="col align-center" >
@@ -499,7 +510,7 @@ function renderDetails(selectedData, userCategory) {
       : document.getElementById('streamingContainer').setAttribute('hidden', '');
 
     // render Person details
-  } else {
+  } else {  // render Person details
     // sets visibility of video and streaming options elements to none
     playerAndStreamEl.setAttribute("hidden", "");
 
@@ -515,7 +526,10 @@ function renderDetails(selectedData, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderPersonCredits(selectedData.combined_credits);
+    const { cast, crew } = selectedData.combined_credits;
+
+    renderPersonCastCredits(cast);
+    renderPersonCrewCredits(crew);
   }
 
   // Hide landing page and show result page

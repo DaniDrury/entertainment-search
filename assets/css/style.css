@@ -111,6 +111,10 @@ footer p {
     cursor: pointer;
 }
 
+.historyItem {
+    width: 92px;
+    height: auto;
+}
 
 #mediaSelect {
     margin-bottom: 1rem;
