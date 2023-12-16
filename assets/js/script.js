@@ -58,7 +58,7 @@ function renderYouTubePlayer() {
 function saveSearchHistory(selectedData, userCategory) {
   // Save the move to local storage
   historyArr.push({ selectedData, userCategory });
-  if (historyArr.length > 6) {
+  if (historyArr.length > 10) {
     historyArr.shift();
   }
   localStorage.setItem("movie", JSON.stringify(historyArr));
