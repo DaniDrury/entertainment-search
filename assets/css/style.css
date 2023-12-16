@@ -48,6 +48,7 @@ ul li {
     max-width: 10em;
     text-align: center;
     padding-bottom: 1em;
+    
 }
 
 li div {
@@ -57,6 +58,7 @@ li div {
 li img {
     display: inline;
     width: min-content;
+    cursor: pointer;
 }
 
 footer {
@@ -92,6 +94,10 @@ footer p {
     justify-content: space-between;
 }
 
+.justify-around {
+    justify-content: space-around;
+}
+
 .align-center {
     align-items: center;
 }
@@ -99,6 +105,11 @@ footer p {
 .gap {
     gap: 1em;
 }
+
+.clickable {
+    cursor: pointer;
+}
+
 
 #mediaSelect {
     margin-bottom: 1rem;
@@ -157,6 +168,7 @@ footer p {
 #selectedDetail {
     padding: 1em 1em;
 }
+
 
 /* medium */
 @media screen and (min-width:768px) {

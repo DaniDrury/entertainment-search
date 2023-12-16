@@ -16,8 +16,8 @@ const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 // Create the iframe element
 function renderYouTubePlayer() {
   ytPlayer = new YT.Player("youtubePlayer", {
-    height: "720",
-    width: "1280",
+    height: `${window.innerHeight * .5}`,
+    width: `${window.innerWidth * .45}`,
     videoId: "",
     playerVars: {
       playsinline: 1,
@@ -67,17 +67,19 @@ function saveSearchHistory(selectedData, userCategory) {
 
 // function to render the search history
 function renderSearchHistory() {
+  // DOM selectors
   const searchHistoryEL = document.querySelector("#searchHistory ul");
   searchHistoryEL.innerHTML = "";
 
-  console.log("search history: ", historyArr);
+  // console.log("search history: ", historyArr);
 
+  // Hide the text Previous Searches if no search history
   if (historyArr.length !== 0) {
     document.querySelector("#searchHistory p").textContent = "Previous Searches:";
   }
 
   for (let i = 0; i < historyArr.length; i++) {
-    // current saved data in the history array
+    // Deconstruct the objects
     const { selectedData, userCategory } = historyArr[i];
     const { poster_path, profile_path } = selectedData;
 
@@ -147,7 +149,7 @@ function loadTrailer(videosArr) {
     resultListEl.textContent = '';
     ytPlayerEl.removeAttribute("hidden");
 
-    modalContentEl.style = 'background-color: black; width: min-content; transform: translate(-30%,0);'
+    modalContentEl.style = 'background-color: black; width: min-content;'
     myModal.show();
 
     ytPlayer.playVideo();
@@ -163,11 +165,16 @@ function renderPoster(posterQueryParam) {
 }
 
 // Function to render the rating of Movie/Tv show
-function renderRating(ratingsArr) {
+function renderRatingRuntime(ratingsArr, runtime) {
   // DOM selectors
   const ratingEl = document.querySelector("#rating");
+  const runtimeEl = document.querySelector("#runtime");
+  
+  // Default text
+  ratingEl.textContent = `N/A`;
+  runtimeEl.insertAdjacentHTML('afterbegin', runtime);
 
-
+  // Loop through the rating array for the correct rating
   for (let i = 0; i < ratingsArr.length; i++) {
     // Destructuring ratings object
     let { rating, iso_3166_1, release_dates } = ratingsArr[i];
@@ -182,12 +189,9 @@ function renderRating(ratingsArr) {
         });
       }
       // Render the rating on the page and quit the function
-      ratingEl.textContent = rating;
-      return;
+      ratingEl.textContent = `${rating}`;
     }
   }
-  // Default rating value if nothing was found
-  ratingEl.textContent = "N/A";
 }
 
 // Function to render cast & crew credits for Person searches
@@ -217,9 +221,8 @@ function renderPersonCredits(creditsObj) {
   // Rendering cast credits
   castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
   for (let i = 0; i < cast.length && i < limit; i++) {
-    // deconstruct cast object & create Li elements
-    const { character, id, media_type, title, release_date, poster_path } =
-      cast[i];
+    // Deconstruct cast object & create Li elements
+    const { character, id, media_type, title, poster_path } = cast[i];
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
     // skip responses where there's no poster
@@ -231,13 +234,13 @@ function renderPersonCredits(creditsObj) {
     // create list item for each cast credit
     const htmlStr = `<li id="cast-${id}">
       <img src="${imgUrl}" alt="${title} Movie Poster">
-      <p>${title}</p>
-      <p>Character: ${character}</p>
+      <h4>${title}</h4>
+      <p>Character: <strong>${character || 'Self'}</strong></p>
     </li>`;
     castUl.insertAdjacentHTML("beforeend", htmlStr);
 
+    // Event listener to get the detail clicked detail
     document.getElementById(`cast-${id}`).addEventListener("click", () => {
-      // Save the move to local storage
       //fetch selected detail
       fetchTmdbSelectedDetail(id, media_type);
     });
@@ -247,7 +250,7 @@ function renderPersonCredits(creditsObj) {
   limit = 10;
 
   // create crewArray for purposes of looking for duplicate credits
-  let crewArray = crew[0] ? [crew[0]] : [];
+  let crewArray = crew[0].poster_path ? [crew[0]] : [];
 
   // deconstruct crew object & get 10 crew credits - combining duplicates into one listing with multiple jobs
   for (let i = 1; i < crew.length && i < limit; i++) {
@@ -273,11 +276,12 @@ function renderPersonCredits(creditsObj) {
 
   crewUl.insertAdjacentHTML("beforeBegin", "<h3>Crew Credits: </h3>");
   // deconstruct crewArray objects and create li items for each
-  crewArray.forEach((el) => {
-    const { job, title, release_date, id, media_type, poster_path } = el;
+  crewArray.forEach((crew) => {
+    const { job, title, id, media_type, poster_path } = crew;
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
 
-    const htmlStr = `<li id="crew-${id}">
+    const htmlStr =
+    `<li id="crew-${id}">
       <img src="${imgUrl}" alt="${title} Movie Poster">
       <p>${title}</p>
       <p>Job: ${job}</p>
@@ -303,8 +307,8 @@ function renderMovieTvCastList(cast) {
     : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
     
     const htmlStr =
-      `<li class="col align-center" id="cast-${i}">
-        <img src="${imgUrl}">
+      `<li class="col align-center" >
+        <img id="cast-${i}" src="${imgUrl}">
         <p>${cast[i].name}</p>
         <p>${cast[i].character}</p>
       </li>`;
@@ -321,7 +325,7 @@ function renderMovieTvCastList(cast) {
 
 // Function to render the seasons list
 function renderTvSeasonList(seasons) {
-  const tvSeasonsEl = document.querySelector("#directorsOrSeasons");
+  const tvSeasonsEl = document.querySelector("#seasonsList");
 
   tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
   for (let i = 1; i < seasons.length; i++) {
@@ -336,7 +340,7 @@ function renderTvSeasonList(seasons) {
   }
 }
 
-function renderStreamingOption(providers){
+function renderStreamingOption(providers, searchName){
   const insertLi = watchOptions => {
     let liHtmlStr = "";
     for (let i = 0; i<watchOptions.length; i++){ 
@@ -345,15 +349,16 @@ function renderStreamingOption(providers){
       
       liHtmlStr += 
       `<li>
-      <img src="${imgUrl}">
+        <a href="https://www.google.com/search?q=watch ${searchName}" target="_blank">
+        <img src="https://image.tmdb.org/t/p/w45${watchOptions[i].logo_path}" alt="icon of streaming service"></a>
       </li>`;
-
     } 
     return liHtmlStr;
 
   }
 
   const streamingListEl = document.querySelector("#streamingList");
+  streamingListEl.textContent = '';
   console.log(providers);
 
   for (key in providers) {
@@ -371,7 +376,7 @@ function renderStreamingOption(providers){
 }
  
 function renderMovieDirector(crews){
-  const directorEl = document.querySelector("#directorsOrSeasons");
+  const directorEl = document.querySelector("#directorsList");
 
   const result = crews.filter((crew) => crew.job ==='Director');
  
@@ -412,7 +417,8 @@ function renderDetails(selectedData, userCategory) {
     videos,
     release_dates,
     content_ratings,
-    seasons
+    seasons,
+    runtime
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -425,13 +431,16 @@ function renderDetails(selectedData, userCategory) {
     playerAndStreamEl.removeAttribute("hidden");
 
     // insert HTML creating Movie/TV Detail elements
-    const htmlStr = `<h2>${title || name}</h2>
-        <h3>Plot Summary</h3>
-        <p>${overview}</p>
-        <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
-        <h3>Rating: <span id="rating"></span></h3>
-        <ul id="castList" class="row"></ul>
-        <ul id="directorsOrSeasons" class="row"></ul>`;
+    const htmlStr =
+      `<h2>${title || name}</h2>
+      <h3>Plot Summary</h3>
+      <p>${overview}</p>
+      <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
+      <h3>Rating: <span id="rating"></span></h3>
+      <h3>Runtime: <span id="runtime"> mins</span></h3>
+      <ul id="directorsList" class="row"></ul>
+      <ul id="castList" class="row"></ul>
+      <ul id="seasonsList" class="row"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
@@ -454,7 +463,7 @@ function renderDetails(selectedData, userCategory) {
       userCategory === "movie"
         ? release_dates.results
         : content_ratings.results;
-    renderRating(ratings, userCategory);
+    renderRatingRuntime(ratings, runtime);
 
     if (seasons) {
       renderTvSeasonList(seasons);
@@ -462,7 +471,7 @@ function renderDetails(selectedData, userCategory) {
 
     //console.log("Providers", providers);
     if(providers.results.US){
-      renderStreamingOption(providers.results.US)
+      renderStreamingOption(providers.results.US, name || title)
     }
     // render Person details
   } else {
@@ -558,13 +567,16 @@ function displayTop5(results, userCategory) {
     const date = release_date || first_air_date || "N/A";
 
     // Create the html string to append to the Ul element
-    const top5Str = `<li id="thumbnail-${i}">
-      <div class="card">
-        <h3>${nameData}</h3>
-        <img src="https://image.tmdb.org/t/p/w92${imageUrl}">
-        <p>Release Date: ${date}</p>
-      </div>
-    </li>`;
+    const top5Str =
+      `<li id="thumbnail-${i}" class="clickable">
+        <div class="pure-g">
+          <div class="pure-u-1-3"><img src="https://image.tmdb.org/t/p/w92${imageUrl}"></div>
+          <div class="pure-u-2-3 col justify-around">
+            <h3>${nameData}</h3>
+            <p>Release Date: ${date}</p>
+          </div>
+        </div>
+      </li>`;
     // Append the html string to the end of the Ul element
     resultListEl.insertAdjacentHTML("beforeend", top5Str);
 
