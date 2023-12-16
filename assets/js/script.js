@@ -18,8 +18,8 @@ const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 // Create the iframe element
 function renderYouTubePlayer() {
   const playerResize = () => {
-    ytPlayerEl.style.height = `min(${(window.innerWidth * .9) * 9 / 16}px, 1080px)`;
-    ytPlayerEl.style.width = `min(${window.innerWidth * .9}px, 1920px)`;
+    ytPlayerEl.style.height = `min(${(window.innerWidth * .9) * 9 / 16}px, 720px)`;
+    ytPlayerEl.style.width = `min(${window.innerWidth * .9}px, 1280px)`;
   };
 
   ytPlayer = new YT.Player("youtubePlayer", {
