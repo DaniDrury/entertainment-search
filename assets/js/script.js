@@ -34,7 +34,7 @@ function renderYouTubePlayer() {
   });
 }
 // Fetch the youtube trailer and display on the iframe
-async function fetchYoutubeTrailer(userInput) {
+/* async function fetchYoutubeTrailer(userInput) {
   const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${userInput}%201%20offical%20trailer&key=AIzaSyAUg-lxn3GSY-w58E4EFURM6w-gOrZmbOw`;
 
   try {
@@ -50,7 +50,7 @@ async function fetchYoutubeTrailer(userInput) {
     alert(error.name);
     console.log(error);
   }
-}
+} */
 //#endregion Youtube API
 
 //#region Misc Functions
@@ -103,28 +103,16 @@ function renderSearchHistory() {
 
 // Function to load the offical trailer on the youtube player
 function loadTrailer(videosArr) {
+  // DOM Selectors
   const trailerModalBtnEl = document.getElementById('trailerModalBtn');
-  trailerModalBtnEl.addEventListener('click', () => {
-    // Check if a video response exist, hide the player and exit the function if not
-    if (videosArr.length === 0) {
-      document.getElementById("youtubePlayer").setAttribute("hidden", "");
-      return;
 
-    } else {
-      // reset the modal
-      resultListEl.textContent = '';
-
-      document.getElementById("youtubePlayer").removeAttribute("hidden");
-      modalContentEl.style = 'background-color: black; width: min-content; transform: translate(-30%,0);'
-      myModal.show();
-
-      ytPlayer.playVideo();
-    }
-  });
+  // Show the play trailer button if trailer exist ie. function was called
+  trailerModalBtnEl.removeAttribute('hidden');
 
   // Default to the 1st video in the array
   let trailerKey = videosArr[0].key;
 
+  // Loop through the array for an offical trailer video if exist
   for (let i = 0; i < videosArr.length; i++) {
     // Destructuring video object
     const { name, key } = videosArr[i];
@@ -143,9 +131,27 @@ function loadTrailer(videosArr) {
       }
     }
   }
-
   // Cue up the trailer video in the YouTube player
   ytPlayer.cueVideoById(trailerKey);
+
+  // Event listener for play trailer button
+  trailerModalBtnEl.addEventListener('click', () => {
+    // Check if a video response doesn't exist, hide the player if doesn't
+    // Redundancy because the button shouldn't render if no trailer.
+    if (videosArr.length === 0) {
+      ytPlayerEl.setAttribute("hidden", "");
+      return;
+    }
+
+    // reset the modal and show the youtube player
+    resultListEl.textContent = '';
+    ytPlayerEl.removeAttribute("hidden");
+
+    modalContentEl.style = 'background-color: black; width: min-content; transform: translate(-30%,0);'
+    myModal.show();
+
+    ytPlayer.playVideo();
+  });
 }
 
 // Function to render the movie poster on the page
@@ -157,12 +163,14 @@ function renderPoster(posterQueryParam) {
 }
 
 // Function to render the rating of Movie/Tv show
-function renderRating(ratings) {
+function renderRating(ratingsArr) {
+  // DOM selectors
   const ratingEl = document.querySelector("#rating");
 
-  for (let i = 0; i < ratings.length; i++) {
+
+  for (let i = 0; i < ratingsArr.length; i++) {
     // Destructuring ratings object
-    let { rating, iso_3166_1, release_dates } = ratings[i];
+    let { rating, iso_3166_1, release_dates } = ratingsArr[i];
 
     // Check for US rating
     if (iso_3166_1 === "US") {
@@ -183,12 +191,17 @@ function renderRating(ratings) {
 }
 
 // Function to render cast & crew credits for Person searches
-function renderPersonCredits(credits) {
+function renderPersonCredits(creditsObj) {
+  // DOM selectors
   const castUl = document.getElementById("castList");
   const crewUl = document.getElementById("crewList");
 
   // deconstruct credits into cast & crew
-  let { cast, crew } = credits;
+  let { cast, crew } = creditsObj;
+
+  // Sort the cast and crew by newest releases
+  cast.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+  crew.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
 
   // hiding either cast or crew UL element if no associated responses
   if (cast.length === 0) {
@@ -201,9 +214,10 @@ function renderPersonCredits(credits) {
   // limiting responses to 10
   let limit = 10;
 
+  // Rendering cast credits
   castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
-  // deconstruct cast object & create Li elements
   for (let i = 0; i < cast.length && i < limit; i++) {
+    // deconstruct cast object & create Li elements
     const { character, id, media_type, title, release_date, poster_path } =
       cast[i];
     const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
