@@ -627,8 +627,8 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
       const episodeHtmlStr =
       `<li id="episode-${i}" class="clickable">
         <div class="pure-g">
-          <div class="pure-u-1-3"><img src="${imgUrl}"></div>
-          <div class="pure-u-2-3 col justify-around align-start gap">
+          <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
+          <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
             <h4>${episode_number}.${name}</h4>
             <h5>Release Date: <span>${air_date}</span></h5>
             <h5>Episode Overview:</h5>
