@@ -247,8 +247,8 @@ function renderPersonCastCredits(castArr) {
     }
 
     // create list item for each cast credit
-    const htmlStr = `<li id="cast-${id}">
-      <img src="${imgUrl}" alt="${title} Movie Poster">
+    const htmlStr = `<li">
+      <img id="cast-${id} src="${imgUrl}" alt="${title} Movie Poster">
       <h4>${title}</h4>
       <p>Character: <strong>${character || 'Self'}</strong></p>
     </li>`;
@@ -312,8 +312,8 @@ function renderPersonCrewCredits(crewArr) {
     : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 
     const htmlStr =
-    `<li id="crew-${id}">
-      <img src="${imgUrl}" alt="${title} Movie Poster">
+    `<li>
+      <img id="crew-${id}" src="${imgUrl}" alt="${title} Movie Poster">
       <p>${title}</p>
       <p>Job: ${job}</p>
     </li>`;
@@ -868,3 +868,8 @@ addEventListener("popstate", () => {
   }
 });
 //#endregion Inits
+
+// bandaid
+document.querySelector('h1').addEventListener('click', () => {
+  window.location.reload();
+});
