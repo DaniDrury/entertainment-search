@@ -247,8 +247,8 @@ function renderPersonCastCredits(castArr) {
     }
 
     // create list item for each cast credit
-    const htmlStr = `<li">
-      <img id="cast-${id} src="${imgUrl}" alt="${title} Movie Poster">
+    const htmlStr = `<li>
+      <img id="cast-${id}" src="${imgUrl}" alt="${title} Movie Poster">
       <h4>${title}</h4>
       <p>Character: <strong>${character || 'Self'}</strong></p>
     </li>`;
