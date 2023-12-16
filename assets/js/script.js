@@ -474,9 +474,9 @@ function renderDetails(selectedData, userCategory) {
       <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
       <h3>Rating: <span id="rating"></span></h3>
       <h3>Runtime: <span id="runtime"> mins</span></h3>
-      <ul id="directorsList" class="row"></ul>
-      <ul id="castList" class="row"></ul>
-      <ul id="seasonsList" class="row"></ul>`;
+      <ul id="directorsList" class="row gap"></ul>
+      <ul id="castList" class="row gap"></ul>
+      <ul id="seasonsList" class="row gap"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
