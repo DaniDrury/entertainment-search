@@ -22,7 +22,8 @@ main {
 }
 
 aside {
-    padding-left: 1em;
+    padding: 0 1em;
+    /* margin-right: 1rem; */
 }
 
 h1 {
