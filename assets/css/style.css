@@ -23,11 +23,11 @@ main {
 
 aside {
     padding: 0 1em;
-    /* margin-right: 1rem; */
 }
 
 h1 {
     margin-bottom: 2rem;
+    cursor: pointer;
 }
 
 h3 span {
@@ -73,9 +73,6 @@ footer p {
     padding: 1rem 0;
 }
 
-.modal-content {
-    color: black;
-}
 
 .display-none {
     display: none;
@@ -103,14 +100,39 @@ footer p {
     align-items: center;
 }
 
+.align-start {
+    align-items: start;
+}
+
 .gap {
     gap: 1em;
+}
+
+.text-left {
+    text-align: left;
 }
 
 .clickable {
     cursor: pointer;
 }
 
+.historyItem {
+    width: 92px;
+    height: auto;
+}
+
+.modal-dialog {
+    overflow: initial;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto
+}
+
+.modal-content {
+    color: black;
+}
 
 #mediaSelect {
     margin-bottom: 1rem;
@@ -173,7 +195,12 @@ footer p {
 
 /* medium */
 @media screen and (min-width:768px) {
+    aside {
+        margin-top: 1em;
+    }
+
     #posterImg {
+        padding-top: 1em;
         padding-bottom: 1em;
         padding-left: 1em;
     }
@@ -211,5 +238,13 @@ footer p {
     #searchInput {
         margin-bottom: 1rem;
         width: 80%;
+    }
+}
+
+/* xxxl */
+@media screen and (min-width: 2560px) {
+    main {
+        min-width: 60%;
+        max-width: 60%;
     }
 }
