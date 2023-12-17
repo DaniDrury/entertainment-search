@@ -196,7 +196,12 @@ footer p {
 
 /* medium */
 @media screen and (min-width:768px) {
+    aside {
+        margin-top: 1em;
+    }
+
     #posterImg {
+        padding-top: 1em;
         padding-bottom: 1em;
         padding-left: 1em;
     }
@@ -234,5 +239,13 @@ footer p {
     #searchInput {
         margin-bottom: 1rem;
         width: 80%;
+    }
+}
+
+/* xxxl */
+@media screen and (min-width: 2560px) {
+    main {
+        min-width: 60%;
+        max-width: 60%;
     }
 }
