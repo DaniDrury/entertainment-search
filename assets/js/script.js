@@ -4,20 +4,27 @@ const landingPageEl = document.querySelector("#landingPage");
 const myModal = new bootstrap.Modal(document.getElementById("staticBackdrop"));
 const myModalEl = document.getElementById('staticBackdrop');
 const modalContentEl = document.querySelector('.modal-content');
-const modalh3El = document.querySelector(".modal-header h3");
-const modalpEl = document.querySelector(".modal-body p");
-const resultListEl = document.getElementById("thumbList");
+const modalh2El = document.querySelector(".modal-header h2");
+const modalpEl = document.querySelector(".modal-body > p");
+const modalListEl = document.getElementById("thumbList");
+
+// YouTube DOM
+let ytPlayer, ytPlayerEl = document.querySelector('#youtubePlayer');
 
 // Global Variables
-let ytPlayer, ytPlayerEl;
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 
 //#region Youtube API
 // Create the iframe element
 function renderYouTubePlayer() {
+  const playerResize = () => {
+    ytPlayerEl.style.height = `min(${(window.innerWidth * .9) * 9 / 16}px, 720px)`;
+    ytPlayerEl.style.width = `min(${window.innerWidth * .9}px, 1280px)`;
+  };
+
   ytPlayer = new YT.Player("youtubePlayer", {
-    height: `${window.innerHeight * .5}`,
-    width: `${window.innerWidth * .45}`,
+    height: `480`,
+    width: `640`,
     videoId: "",
     playerVars: {
       playsinline: 1,
@@ -25,11 +32,16 @@ function renderYouTubePlayer() {
     events: {
       onReady: () => {
         console.log("YouTube player loaded");
-        ytPlayerEl = document.getElementById('youtubePlayer');
+        ytPlayerEl = document.querySelector('#youtubePlayer');
         // Hide the video after iframe creation
         ytPlayerEl.setAttribute('hidden', '');
+
+        // resize youtube player size on window resize
+        addEventListener("resize", () => {
+          playerResize();
+        });
       },
-      // 'onStateChange': onPlayerStateChange
+      'onStateChange': playerResize()
     },
   });
 }
@@ -90,7 +102,10 @@ function renderSearchHistory() {
         : "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg";
 
     // Create the Li element with nested img
-    const htmlStr = `<li id="history-${i}"><img src="${imgUrl}"></li>`;
+    const htmlStr =
+      `<li id="history-${i}">
+        <img src="${imgUrl}" class='historyItem'>
+      </li>`;
 
     // Insert newest first
     searchHistoryEL.insertAdjacentHTML("afterbegin", htmlStr);
@@ -99,6 +114,7 @@ function renderSearchHistory() {
     document.querySelector(`#history-${i}`).addEventListener("click", () => {
       //fetch selected detail
       addHistory(selectedData, userCategory);
+      console.log(`Search history: selected ${userCategory} details: `, selectedData);
     });
   }
 }
@@ -107,6 +123,7 @@ function renderSearchHistory() {
 function loadTrailer(videosArr) {
   // DOM Selectors
   const trailerModalBtnEl = document.getElementById('trailerModalBtn');
+  trailerModalBtnEl.removeAttribute('hidden');
 
   // Show the play trailer button if trailer exist ie. function was called
   trailerModalBtnEl.removeAttribute('hidden');
@@ -146,12 +163,15 @@ function loadTrailer(videosArr) {
     }
 
     // reset the modal and show the youtube player
-    resultListEl.textContent = '';
+    modalListEl.textContent = '';
     ytPlayerEl.removeAttribute("hidden");
 
+    // Style the modal for the player
     modalContentEl.style = 'background-color: black; width: min-content;'
-    myModal.show();
+    modalContentEl.parentElement.style.maxWidth = 'min-content';
 
+    // Start the video when modal open
+    myModal.show();
     ytPlayer.playVideo();
   });
 }
@@ -195,24 +215,17 @@ function renderRatingRuntime(ratingsArr, runtime) {
 }
 
 // Function to render cast & crew credits for Person searches
-function renderPersonCredits(creditsObj) {
+function renderPersonCastCredits(castArr) {
   // DOM selectors
   const castUl = document.getElementById("castList");
-  const crewUl = document.getElementById("crewList");
 
-  // deconstruct credits into cast & crew
-  let { cast, crew } = creditsObj;
+  // Sort the cast by newest releases
+  castArr.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
 
-  // Sort the cast and crew by newest releases
-  cast.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-  crew.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-
-  // hiding either cast or crew UL element if no associated responses
-  if (cast.length === 0) {
+  // hiding cast UL element if none exist and exit function
+  if (castArr.length === 0) {
     castUl.setAttribute("hidden", "");
-  }
-  if (crew.length === 0) {
-    crewUl.setAttribute("hidden", "");
+    return;
   }
 
   // limiting responses to 10
@@ -220,10 +233,12 @@ function renderPersonCredits(creditsObj) {
 
   // Rendering cast credits
   castUl.insertAdjacentHTML("beforeBegin", "<h3>Cast Credits: </h3>");
-  for (let i = 0; i < cast.length && i < limit; i++) {
+  for (let i = 0; i < castArr.length && i < limit; i++) {
     // Deconstruct cast object & create Li elements
-    const { character, id, media_type, title, poster_path } = cast[i];
-    const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
+    const { character, id, media_type, title, poster_path } = castArr[i];
+    const imgUrl = poster_path
+      ? `https://image.tmdb.org/t/p/w92${poster_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 
     // skip responses where there's no poster
     if (!poster_path) {
@@ -232,8 +247,8 @@ function renderPersonCredits(creditsObj) {
     }
 
     // create list item for each cast credit
-    const htmlStr = `<li id="cast-${id}">
-      <img src="${imgUrl}" alt="${title} Movie Poster">
+    const htmlStr = `<li>
+      <img id="cast-${id}" src="${imgUrl}" alt="${title} Movie Poster">
       <h4>${title}</h4>
       <p>Character: <strong>${character || 'Self'}</strong></p>
     </li>`;
@@ -245,16 +260,30 @@ function renderPersonCredits(creditsObj) {
       fetchTmdbSelectedDetail(id, media_type);
     });
   }
+}
+
+function renderPersonCrewCredits(crewArr) {
+  // DOM selectors
+  const crewUl = document.getElementById("crewList");
+
+  // Sort the crew by newest releases
+  crewArr.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+
+  // hiding crew UL element if none exist and exit function
+  if (crewArr.length === 0) {
+    crewUl.setAttribute("hidden", "");
+    return;
+  }
 
   // reset limit to 10 before crew credits
-  limit = 10;
+  let limit = 10;
 
   // create crewArray for purposes of looking for duplicate credits
-  let crewArray = crew[0].poster_path ? [crew[0]] : [];
+  let crewArray = crewArr[0].poster_path ? [crewArr[0]] : [];
 
   // deconstruct crew object & get 10 crew credits - combining duplicates into one listing with multiple jobs
-  for (let i = 1; i < crew.length && i < limit; i++) {
-    const { job, title, poster_path } = crew[i];
+  for (let i = 1; i < crewArr.length && i < limit; i++) {
+    const { job, title, poster_path } = crewArr[i];
     let skip = false;
 
     // look for duplicate title credits - combine job data to first title credit
@@ -271,18 +300,20 @@ function renderPersonCredits(creditsObj) {
       continue;
     }
     // add crew credit to crewArray if not a duplicate
-    crewArray.push(crew[i]);
+    crewArray.push(crewArr[i]);
   }
 
   crewUl.insertAdjacentHTML("beforeBegin", "<h3>Crew Credits: </h3>");
   // deconstruct crewArray objects and create li items for each
   crewArray.forEach((crew) => {
     const { job, title, id, media_type, poster_path } = crew;
-    const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
+    const imgUrl = poster_path
+    ? `https://image.tmdb.org/t/p/w92${poster_path}`
+    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
 
     const htmlStr =
-    `<li id="crew-${id}">
-      <img src="${imgUrl}" alt="${title} Movie Poster">
+    `<li>
+      <img id="crew-${id}" src="${imgUrl}" alt="${title} Movie Poster">
       <p>${title}</p>
       <p>Job: ${job}</p>
     </li>`;
@@ -303,8 +334,9 @@ function renderMovieTvCastList(cast) {
   castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
   // Display only 10 cast members
   for (let i = 0; i < 10 && i < cast.length; i++) {
-    const imgUrl = cast[i].profile_path ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
-    : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    const imgUrl = cast[i].profile_path
+      ? `https://image.tmdb.org/t/p/w92${cast[i].profile_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
     
     const htmlStr =
       `<li class="col align-center" >
@@ -324,19 +356,26 @@ function renderMovieTvCastList(cast) {
 }
 
 // Function to render the seasons list
-function renderTvSeasonList(seasons) {
+function renderTvSeasonList(seasons, selectedId) {
   const tvSeasonsEl = document.querySelector("#seasonsList");
 
   tvSeasonsEl.insertAdjacentHTML("beforeBegin", "<h3>Seasons information</h3>");
   for (let i = 1; i < seasons.length; i++) {
-    const season = seasons[i];
+    // Deconstruct season object
+    const { name, poster_path, episode_count, season_number } = seasons[i];
+
     const seasonDetailHtml =
       `<li class='col align-center'>
-        <p>${season.name}</p>
-        <img src="https://image.tmdb.org/t/p/w92${season.poster_path}">
-        <p>Episode Count: ${season.episode_count}</p>
+        <p>${name}</p>
+        <img id="seasonListItem-${i}" src="https://image.tmdb.org/t/p/w92${poster_path}">
+        <p>Episode Count: ${episode_count}</p>
       </li>`;
     tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetailHtml);
+
+    // Event listener for click on the poster
+    document.querySelector(`#seasonListItem-${i}`).addEventListener('click', () => {
+      fetchTmdbSeasonDetail(selectedId, season_number)
+    });
   }
 }
 
@@ -357,16 +396,19 @@ function renderStreamingOption(providers, searchName){
 
   }
 
+  // Show the h3 with Streaming Options
+  document.getElementById('streamingContainer').removeAttribute('hidden');
+
   const streamingListEl = document.querySelector("#streamingList");
   streamingListEl.textContent = '';
-  console.log(providers);
+  // console.log(providers);
 
   for (key in providers) {
     if( key==="link"){
       continue;
     }
     const watchOptions = providers[key];
-    console.log(key, watchOptions);
+    // console.log(key, watchOptions);
     const ulHtmlStr = 
       `<h4>${key}</h4>
       <ul>${insertLi(watchOptions)}</ul>
@@ -378,19 +420,28 @@ function renderStreamingOption(providers, searchName){
 function renderMovieDirector(crews){
   const directorEl = document.querySelector("#directorsList");
 
-  const result = crews.filter((crew) => crew.job ==='Director');
+  const resultArr = crews.filter((crew) => crew.job === 'Director');
+  // console.log(resultArr);
  
   directorEl.insertAdjacentHTML("beforebegin","<h3>Director:</h3>");
+  for (let i = 0; i < resultArr.length; i++){
+    const { id, name, profile_path } = resultArr[i];
 
-  for(let i=0; i<result.length ;i++){
-    const imgUrl =`https://image.tmdb.org/t/p/w92${result[i].profile_path}`;
+    const imgUrl = profile_path
+      ? `https://image.tmdb.org/t/p/w92${profile_path}`
+      : `https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg`;
+    
     const htmlStr = 
     `<li>
-     <img src="${imgUrl}">
-     <p>${result[i].name}</p>
+     <img id="director-${i}" src="${imgUrl}">
+     <p>${name}</p>
     </li>`;
     
-    directorEl.insertAdjacentHTML("beforeend",htmlStr);
+    directorEl.insertAdjacentHTML("beforeend", htmlStr);
+    
+    document.querySelector(`#director-${i}`).addEventListener('click', () => {
+      fetchTmdbSelectedDetail(id, 'person');
+    })
   }
 }
 
@@ -418,7 +469,8 @@ function renderDetails(selectedData, userCategory) {
     release_dates,
     content_ratings,
     seasons,
-    runtime
+    runtime,
+    id: selectedId
   } = selectedData;
 
   // Render the profile/poster for user selected choice
@@ -438,25 +490,18 @@ function renderDetails(selectedData, userCategory) {
       <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
       <h3>Rating: <span id="rating"></span></h3>
       <h3>Runtime: <span id="runtime"> mins</span></h3>
-      <ul id="directorsList" class="row"></ul>
-      <ul id="castList" class="row"></ul>
-      <ul id="seasonsList" class="row"></ul>`;
+      <ul id="directorsList" class="row gap"></ul>
+      <ul id="castList" class="row gap"></ul>
+      <ul id="seasonsList" class="row gap"></ul>`;
 
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderMovieTvCastList(credits.cast);
-    loadTrailer(videos.results);
-    if (userCategory==="movie"){
-      renderMovieDirector(credits.crew);                   
-    }
-    // Render either the seasons list or directors list
-    // depending on TV or Movie
-    if (userCategory === "tv") {
-      // renderSeasonList(selectedData.seasons);
-    } else {
-      // renderDirectorList();
-    }
+    // load a YT trailer for the selected tv/movie if exist
+    // hide the button if doesn't
+    videos.results.length !== 0
+      ? loadTrailer(videos.results)
+      : playerAndStreamEl.firstElementChild.setAttribute('hidden', '');
 
     // Get the right response data for the rating
     const ratings =
@@ -466,15 +511,22 @@ function renderDetails(selectedData, userCategory) {
     renderRatingRuntime(ratings, runtime);
 
     if (seasons) {
-      renderTvSeasonList(seasons);
+      renderTvSeasonList(seasons, selectedId);
     }
 
-    //console.log("Providers", providers);
-    if(providers.results.US){
-      renderStreamingOption(providers.results.US, name || title)
+    if (userCategory==="movie"){
+      renderMovieDirector(credits.crew);                   
     }
+
+    renderMovieTvCastList(credits.cast);
+
+    //console.log("Providers", providers);
+    providers.results.US
+      ? renderStreamingOption(providers.results.US, name || title)
+      : document.getElementById('streamingContainer').setAttribute('hidden', '');
+
     // render Person details
-  } else {
+  } else {  // render Person details
     // sets visibility of video and streaming options elements to none
     playerAndStreamEl.setAttribute("hidden", "");
 
@@ -490,18 +542,21 @@ function renderDetails(selectedData, userCategory) {
     // Append the detail onto the page
     selectedDetailEL.insertAdjacentHTML("beforeend", htmlStr);
 
-    renderPersonCredits(selectedData.combined_credits);
+    const { cast, crew } = selectedData.combined_credits;
+
+    renderPersonCastCredits(cast);
+    renderPersonCrewCredits(crew);
   }
 
   // Hide landing page and show result page
   landingPageEl.setAttribute("hidden", "");
   resultDisplayEl.removeAttribute("hidden");
+
+  // Scroll to the top of the poster
+  document.querySelector('#posterImg').scrollIntoView({behavior: "smooth"});
 }
 
-//#endregion Misc Functions
-
-//#region TMDB API
-// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+// Function to add to the browser history list and call renderDetails
 function addHistory(selectedData, userCategory) {
   // Set the parameters for the page history to come back to
   const stateHistory = {
@@ -517,20 +572,110 @@ function addHistory(selectedData, userCategory) {
   // Fetch the selection detail if Id was pass into the function
   if (selectedData) {
     renderDetails(selectedData, userCategory);
+    // console.log(`Added to browser history: `, selectedData);
+  }
+}
+//#endregion Misc Functions
 
-    console.log(selectedData);
+//#region TMDB API
+// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
+  // This function is called when user click on the episode list inside the modal
+  const fetchTmdbEpisodeDetail = async (seriesId, seasonNumber, episode_number) => {
+    const fetchUrl =
+    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits`;
+
+    try {
+      const response = await fetch(fetchUrl);
+      const episodeData = await response.json();
+      console.log(seriesId, seasonNumber, episode_number);
+      console.log(`Fetched selected episode data`, episodeData);
+
+      // Save reponse data to localStorage and add to history
+      // saveSearchHistory(episodeData, 'tv');
+      // addHistory(episodeData, 'tv');
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // This function is called after fetching the data about the selected season
+  const displaySeasonDetail = seasonDataObj => {
+    // Destructuring season object
+    const { episodes, name, overview } = seasonDataObj;
+
+    // reset modal
+    modalListEl.innerHTML = "";
+    modalpEl.textContent = "";
+
+    // Set the title of the modal
+    modalh2El.textContent = `${name}`;
+    if (overview) {
+      modalh2El.insertAdjacentHTML('beforeend', `<h4 style="font-size: .8em;">Season Overview: <p style="font-weight: 400; font-size: 16px;">${overview}</p></h4>`)
+    }
+
+    // Display the episodes for selected season
+    modalListEl.insertAdjacentHTML('beforeend', `<h3>Episodes:</h3><br>`);
+    episodes.forEach((episodeOjb, i) => {
+      // Destructure episode object
+      const { air_date, name, overview, still_path, episode_number } = episodeOjb;
+
+      const imgUrl = still_path ? `https://image.tmdb.org/t/p/w185${still_path}` : ``;
+
+      // Insert html string into the modal list
+      const episodeHtmlStr =
+      `<li id="episode-${i}" class="clickable">
+        <div class="pure-g">
+          <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
+          <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
+            <h4>${episode_number}.${name}</h4>
+            <h5>Release Date: <span>${air_date}</span></h5>
+            <h5>Episode Overview:</h5>
+            <p class="text-left">${overview}</p><br>
+          </div>
+        </div>
+      </li>`;
+      modalListEl.insertAdjacentHTML('beforeend', episodeHtmlStr);
+
+      document.querySelector(`#episode-${i}`).addEventListener('click', () => {
+        // Fetch the selected episode data and hide the modal
+        fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number);
+        myModal.hide();
+      });
+    });
+
+    // Style the modal and show
+    modalContentEl.parentElement.style.maxWidth = '70vw';
+    myModal.show();
+  };
+
+  // Fetch the selected season detail
+  const fetchUrl =
+    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=images`;
+
+  try {
+    const response = await fetch(fetchUrl);
+    const seasonData = await response.json();
+    console.log(seriesId, seasonNumber);
+    console.log(`Fetched selected season data`, seasonData);
+
+    // Display a modal with the selected season information
+    displaySeasonDetail(seasonData);
+
+  } catch (error) {
+    console.error(error);
   }
 }
 
 async function fetchTmdbSelectedDetail(selectedId, userCategory) {
-  console.log("Fetch selected data");
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
 
   try {
     const response = await fetch(url);
     const selectedData = await response.json();
-    console.log(`${userCategory} details: `, selectedData);
+    console.log(`Fetched: selected ${userCategory} details: `, selectedData);
 
     // Save reponse data to localStorage and add to history
     saveSearchHistory(selectedData, userCategory);
@@ -540,13 +685,15 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   }
 }
 
-// function to display top 5 results of search - allow user to select specific one
-function displayTop5(results, userCategory) {
-  // reset modal
-  resultListEl.innerHTML = "";
+// Function to fetch the movieId using the search string from the user
+async function fetchTmdbId(userCategory, userInput) {
+  // function to display top 5 results of search - allow user to select specific one
+  const displayTop5 = (results, userCategory) => {
+    // reset modal
+  modalListEl.innerHTML = "";
   modalpEl.textContent = "";
 
-  modalh3El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
+  modalh2El.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
   console.log(results);
 
   // create and append 5 possible matches to user query
@@ -578,13 +725,13 @@ function displayTop5(results, userCategory) {
         </div>
       </li>`;
     // Append the html string to the end of the Ul element
-    resultListEl.insertAdjacentHTML("beforeend", top5Str);
+    modalListEl.insertAdjacentHTML("beforeend", top5Str);
 
     // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
     document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
       let selectedId = results[i].id;
       // Reset the modal list
-      resultListEl.innerHTML = "";
+      modalListEl.innerHTML = "";
 
       //fetch selected detail
       fetchTmdbSelectedDetail(selectedId, userCategory);
@@ -595,17 +742,14 @@ function displayTop5(results, userCategory) {
   }
   // Display the modal to the user
   myModal.show();
-}
-
-// Function to fetch the movieId using the search string from the user
-async function fetchTmdbId(userCategory, userInput) {
+  };
   // Create an url for an API call
   const url = `https://api.themoviedb.org/3/search/${userCategory}?query=${userInput}&page=1&api_key=a3a4488d24de37de13b91ee3283244ec`;
 
   try {
     const response = await fetch(url);
     const responseData = await response.json();
-    console.log(`${userCategory} search: `, responseData);
+    console.log(`Fetched: ${userCategory} search result: `, responseData);
 
     // Display top 5 results for user to select the right movie
     if (responseData.results.length > 1) {
@@ -614,9 +758,9 @@ async function fetchTmdbId(userCategory, userInput) {
       // If there's only one result
     } else if (responseData.results.length === 0) {
         // reset modal
-        resultListEl.innerHTML = "";
+        modalListEl.innerHTML = "";
   
-        modalh3El.textContent = "Warning";
+        modalh2El.textContent = "Warning";
         modalpEl.innerHTML =
           "Could not find any exact matches - please check your spelling!";
         myModal.show();
@@ -663,10 +807,10 @@ addEventListener("DOMContentLoaded", () => {
     // Change this to modal, can't use alert
     if (!userInput || !userCategory) {
       // reset the modal
-      resultListEl.innerHTML = "";
+      modalListEl.innerHTML = "";
 
       // Set the modal for warning
-      modalh3El.textContent = "Warning";
+      modalh2El.textContent = "Warning";
       modalpEl.innerHTML =
         "Please enter a <strong>Search Category</strong> AND a valid <strong>Title</strong> or <strong>Person Name</strong>";
       myModal.show();
@@ -683,10 +827,10 @@ addEventListener("DOMContentLoaded", () => {
     ytPlayerEl.setAttribute('hidden', '');
     modalContentEl.style.removeProperty("background-color");
     modalContentEl.style.removeProperty("width");
-    modalContentEl.style.removeProperty("transform");
+    modalContentEl.parentElement.style.maxWidth = '500px';
     modalpEl.textContent = '';
-    modalh3El.textContent = '';
-    resultListEl.textContent = '';
+    modalh2El.textContent = '';
+    modalListEl.textContent = '';
   });
 });
 
@@ -724,3 +868,8 @@ addEventListener("popstate", () => {
   }
 });
 //#endregion Inits
+
+// bandaid
+document.querySelector('h1').addEventListener('click', () => {
+  window.location.reload();
+});
