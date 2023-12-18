@@ -18,11 +18,31 @@
   z-index: 1060;
   display: none;
   width: 100%;
-  height: 100%;
+  height:100%;
   overflow-x: hidden;
   overflow-y: auto;
   outline: 0;
 }
+
+H1:hover{
+
+  opacity: 50%;
+
+}
+img {
+  width: 100px;
+  height: 100px;
+  background: red;
+  transition: width 2s;
+}
+
+img:hover {
+  width: 200px;
+}
+
+
+
+
 
 .modal-dialog {
   position: relative;
