@@ -241,7 +241,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
 
       // Event listener for click on the poster
       document.querySelector(`#seasonListItem-${i}`).addEventListener('click', () => {
-        fetchTmdbSeasonDetail(selectedId, season_number)
+        fetchTmdbSeasonDetail(selectedId, season_number, selectedData)
       });
     }
   }
@@ -339,19 +339,26 @@ function renderDetails(selectedData, userCategory, seriesData) {
       });
     } else if (userCategory === 'episode') {
       // Destructre the seasonDataObj
-      const { seriesId, seasonDataObj } = seriesData;
+      const { seriesId, seasonDataObj, tvShowDataObj } = seriesData;
       const { name, poster_path, season_number } = seasonDataObj;
 
       const imgUrl = `https://image.tmdb.org/t/p/w185${poster_path}`
 
       const collectionHtmlStr = `
+        <img id="tvShowPoster" class="clickable" src="https://image.tmdb.org/t/p/w185${tvShowDataObj.poster_path}">
         <figcaption>${name}</figcaption>
-        <img id="collectionImg" class="clickable" src="${imgUrl}">`
+        <img id="seasonPoster" class="clickable" src="${imgUrl}">`
       collectionEl.insertAdjacentHTML('beforeend', collectionHtmlStr);
 
+      // Event listener on click of tvShow img
+      document.getElementById('tvShowPoster').addEventListener('click', () => {
+        saveSearchHistory(tvShowDataObj, 'tv');
+        addHistory(tvShowDataObj, 'tv');
+      });
+
       // Event listener on click of season img
-      document.getElementById('collectionImg').addEventListener('click', () => {
-        displaySeasonModal(seriesId, season_number, seasonDataObj)
+      document.getElementById('seasonPoster').addEventListener('click', () => {
+        displaySeasonModal(seriesId, season_number, seasonDataObj, tvShowDataObj)
       });
     }
   };
@@ -739,7 +746,7 @@ async function fetchCollectionDetail(collectionId) {
 }
 
 // This function is called when user click on the episode list inside the modal
-async function fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj) {
+async function fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj, tvShowDataObj) {
   const fetchUrl =
   `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits,videos`;
 
@@ -753,8 +760,8 @@ async function fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, se
     }
 
     // Save reponse data to localStorage and add to history
-    saveSearchHistory(episodeData, 'episode');
-    addHistory(episodeData, 'episode', {seriesId, seasonDataObj});
+    saveSearchHistory(episodeData, 'episode', {seriesId, seasonDataObj, tvShowDataObj});
+    addHistory(episodeData, 'episode', {seriesId, seasonDataObj, tvShowDataObj});
 
   } catch (error) {
     console.error(error);
@@ -762,7 +769,7 @@ async function fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, se
 };
 
 // This function is called after fetching the data about the selected season
-function displaySeasonModal(seriesId, seasonNumber, seasonDataObj) {
+function displaySeasonModal(seriesId, seasonNumber, seasonDataObj, tvShowDataObj) {
   // Destructuring season object
   const { episodes, name, overview } = seasonDataObj;
 
@@ -799,7 +806,7 @@ function displaySeasonModal(seriesId, seasonNumber, seasonDataObj) {
     // Event listener on click of an episode on the modal
     document.querySelector(`#episode-${i}`).addEventListener('click', () => {
       // Fetch the selected episode data and hide the modal
-      fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj);
+      fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj, tvShowDataObj);
       myModal.hide();
     });
   });
@@ -810,7 +817,7 @@ function displaySeasonModal(seriesId, seasonNumber, seasonDataObj) {
 };
 
 // Function to fetch the season detail using the seriesId that was retrieved from TMDB
-async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
+async function fetchTmdbSeasonDetail(seriesId, seasonNumber, tvShowDataObj) {
   // Fetch the selected season detail
   const fetchUrl =
     `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=images`;
@@ -825,7 +832,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
     }
 
     // Display a modal with the selected season information
-    displaySeasonModal(seriesId, seasonNumber, seasonData);
+    displaySeasonModal(seriesId, seasonNumber, seasonData, tvShowDataObj);
 
   } catch (error) {
     console.error(error);
