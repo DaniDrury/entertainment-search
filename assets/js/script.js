@@ -18,6 +18,9 @@ const myModal = new bootstrap.Modal(DOM_SELECTORS.myModalEl);
 let ytPlayer;
 const MODAL_MAX_WIDTH = '60vw';
 
+// Change this to true when debugging / testing
+const IS_DEBUGGING = false;
+
 
 //#region Youtube API
 
@@ -127,7 +130,9 @@ function renderSearchHistory() {
     document.getElementById(`history-${i}`).addEventListener("click", () => {
       //fetch selected detail
       addHistory(selectedData, userCategory);
-      console.log(`Search history: selected ${userCategory} details: `, selectedData);
+      if (IS_DEBUGGING) {
+        console.log(`Search history: selected ${userCategory} details: `, selectedData);
+      }
     });
   }
 }
@@ -631,12 +636,16 @@ function addHistory(selectedData, userCategory) {
 
   // Add popstate history
   history.pushState(stateHistory, "", "");
-  // console.log("pushState: ", stateHistory);
+  if (IS_DEBUGGING) {
+    console.log("pushState: ", stateHistory);
+  }
 
   // Fetch the selection detail if Id was pass into the function
   if (selectedData) {
     renderDetails(selectedData, userCategory);
-    // console.log(`Added to browser history: `, selectedData);
+    if (IS_DEBUGGING) {
+      console.log(`Added to browser history: `, selectedData);
+    }
   }
 }
 //#endregion Misc Functions
@@ -701,7 +710,9 @@ async function fetchCollectionDetail(collectionId) {
   try {
     const response = await fetch(collectionUrl);
     const collectionData = await response.json();
-    console.log(`Fetched: selected Collection details: `, collectionData);
+    if (IS_DEBUGGING) {
+      console.log(`Fetched: selected Collection details: `, collectionData);
+    }
 
     displayCollectionModal(collectionData);
 
@@ -723,13 +734,15 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
     try {
       const response = await fetch(fetchUrl);
       const episodeData = await response.json();
-      console.log(seriesId, seasonNumber, episode_number);
-      console.log(`Fetched selected episode data`, episodeData);
+
+      if (IS_DEBUGGING) {
+        console.log(seriesId, seasonNumber, episode_number);
+        console.log(`Fetched selected episode data`, episodeData);
+      }
 
       // Save reponse data to localStorage and add to history
-      // saveSearchHistory(episodeData, 'tv');
-      // addHistory(episodeData, 'tv');
-      renderDetails(episodeData, 'episode');
+      saveSearchHistory(episodeData, 'episode');
+      addHistory(episodeData, 'episode');
 
     } catch (error) {
       console.error(error);
@@ -791,8 +804,11 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
   try {
     const response = await fetch(fetchUrl);
     const seasonData = await response.json();
-    console.log(seriesId, seasonNumber);
-    console.log(`Fetched selected season data`, seasonData);
+
+    if (IS_DEBUGGING) {
+      console.log(seriesId, seasonNumber);
+      console.log(`Fetched selected season data`, seasonData);
+    }
 
     // Display a modal with the selected season information
     displaySeasonDetail(seasonData);
@@ -810,7 +826,9 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   try {
     const response = await fetch(url);
     const selectedData = await response.json();
-    console.log(`Fetched: selected ${userCategory} details: `, selectedData);
+    if (IS_DEBUGGING) {
+      console.log(`Fetched: selected ${userCategory} details: `, selectedData);
+    }
 
     // Save reponse data to localStorage and add to history
     saveSearchHistory(selectedData, userCategory);
@@ -824,52 +842,54 @@ async function fetchTmdbSelectedDetail(selectedId, userCategory) {
 async function fetchTmdbId(userCategory, userInput) {
   // function to display top 5 results of search - allow user to select specific one
   const displayTop5 = (resultsArr, userCategory) => {
+    DOM_SELECTORS.modalHeaderEl.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
 
-  DOM_SELECTORS.modalHeaderEl.textContent = `Choose the Specific ${userCategory.toUpperCase()}`;
-  console.log(resultsArr);
+    if (IS_DEBUGGING) {
+      console.log(resultsArr);
+    }
 
-  // create and append 5 possible matches to user query
-  for (let i = 0; i < 5 && i < resultsArr.length; i++) {
-    // Deconstruct result object
-    const {
-      name,
-      original_title,
-      profile_path,
-      poster_path,
-      release_date,
-      first_air_date,
-    } = resultsArr[i];
+    // create and append 5 possible matches to user query
+    for (let i = 0; i < 5 && i < resultsArr.length; i++) {
+      // Deconstruct result object
+      const {
+        name,
+        original_title,
+        profile_path,
+        poster_path,
+        release_date,
+        first_air_date,
+      } = resultsArr[i];
 
-    // Result datas
-    const nameData = name || original_title;
-    const imageUrl = profile_path || poster_path;
-    const date = release_date || first_air_date || "N/A";
+      // Result datas
+      const nameData = name || original_title;
+      const imageUrl = profile_path || poster_path;
+      const date = release_date || first_air_date || "N/A";
 
-    // Create the html string to append to the Ul element
-    const top5Str = `
-      <li id="thumbnail-${i}" class="clickable">
-        <div class="pure-g">
-          <div class="pure-u-1-3"><img src="https://image.tmdb.org/t/p/w92${imageUrl}"></div>
-          <div class="pure-u-2-3 col justify-around">
-            <h3>${nameData}</h3>
-            <p>Release Date: ${date}</p>
+      // Create the html string to append to the Ul element
+      const top5Str = `
+        <li id="thumbnail-${i}" class="clickable">
+          <div class="pure-g">
+            <div class="pure-u-1-3"><img src="https://image.tmdb.org/t/p/w92${imageUrl}"></div>
+            <div class="pure-u-2-3 col justify-around">
+              <h3>${nameData}</h3>
+              <p>Release Date: ${date}</p>
+            </div>
           </div>
-        </div>
-      </li>`;
-    // Append the html string to the end of the Ul element
-    DOM_SELECTORS.modalListEl.insertAdjacentHTML("beforeend", top5Str);
+        </li>`;
+      // Append the html string to the end of the Ul element
+      DOM_SELECTORS.modalListEl.insertAdjacentHTML("beforeend", top5Str);
 
-    // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
-    document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
-      const { id: selectedId } = resultsArr[i];
+      // add eventlistener to each li item for user to select then pass that specific movie id to fetchTmdbMovieDetail function
+      document.querySelector(`#thumbnail-${i}`).addEventListener("click", () => {
+        const { id: selectedId } = resultsArr[i];
 
-      //fetch selected detail
-      fetchTmdbSelectedDetail(selectedId, userCategory);
+        //fetch selected detail
+        fetchTmdbSelectedDetail(selectedId, userCategory);
 
-      // Hide the modal after user picked a movie from 5 results
-      myModal.hide();
-    });
-  }
+        // Hide the modal after user picked a movie from 5 results
+        myModal.hide();
+      });
+    }
   // Display the modal to the user
   myModal.show();
   };
@@ -880,7 +900,10 @@ async function fetchTmdbId(userCategory, userInput) {
   try {
     const response = await fetch(url);
     const responseData = await response.json();
-    console.log(`Fetched: ${userCategory} search result: `, responseData);
+
+    if (IS_DEBUGGING) {
+      console.log(`Fetched: ${userCategory} search result: `, responseData);
+    }
 
     // Display top 5 results for user to select the right movie
     if (responseData.results.length > 1) {
