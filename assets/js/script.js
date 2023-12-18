@@ -109,12 +109,12 @@ function renderSearchHistory() {
   for (let i = 0; i < historyArr.length; i++) {
     // Deconstruct the objects
     const { selectedData, userCategory } = historyArr[i];
-    const { poster_path, profile_path } = selectedData;
+    const { poster_path, profile_path, still_path } = selectedData;
 
     // Check if the image exist, if not render a placeholder
     let imgUrl =
-      poster_path || profile_path
-        ? `https://image.tmdb.org/t/p/w92${poster_path || profile_path}`
+      poster_path || profile_path || still_path
+        ? `https://image.tmdb.org/t/p/w92${poster_path || profile_path || still_path}`
         : "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg";
 
     // Create the Li element with nested img
@@ -138,7 +138,7 @@ function renderSearchHistory() {
 }
 
 // Main rendering function
-function renderDetails(selectedData, userCategory) {
+function renderDetails(selectedData, userCategory, seriesData) {
   // DOM selectors
   const selectedDetailEL = document.getElementById("selectedDetail");
   const playerAndStreamEl = document.getElementById("playerAndStream");
@@ -279,35 +279,6 @@ function renderDetails(selectedData, userCategory) {
     }
   }
 
-  // Function to render the cast list and listen to click on their image to give more detail on them.
-  const renderMovieTvCastList = (castArr) => {
-    // DOM selectors
-    const castListEl = document.querySelector("#castList");
-
-    // Create a cast information heading before the list
-    castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
-    // Display only 10 cast members
-    for (let i = 0; i < 10 && i < castArr.length; i++) {
-      const imgUrl = castArr[i].profile_path
-        ? `https://image.tmdb.org/t/p/w92${castArr[i].profile_path}`
-        : PLACEHOLDER_URL;
-      
-      const htmlStr =
-        `<li class="col align-center" >
-          <img id="cast-${i}" src="${imgUrl}">
-          <p>${castArr[i].name}</p>
-          <p>${castArr[i].character}</p>
-        </li>`;
-      castListEl.insertAdjacentHTML("beforeend", htmlStr);
-
-      // Event listener to fetch the detail of the cast
-      document.querySelector(`#cast-${i}`).addEventListener("click", () => {
-        //fetch selected detail
-        fetchTmdbSelectedDetail(castArr[i].id, "person");
-      });
-    }
-  }
-
   // Function to render list of streaming websites
   const renderStreamingOption = (providersObj, searchName) => {
     // DOM selectors
@@ -346,26 +317,73 @@ function renderDetails(selectedData, userCategory) {
     }
   }
 
-  const renderCollection = () => {
-    // Destructure the collection object
-    const {
-      id: collectionId,
-      name,
-      poster_path,
-    } = belongs_to_collection;
+  const renderCollectionOrSeason = () => {
+    if (userCategory === 'movie') {
+      // Destructure the collection object
+      const {
+        id: collectionId,
+        name,
+        poster_path,
+      } = belongs_to_collection;
 
-    const imgUrl = `https://image.tmdb.org/t/p/w185${poster_path}`
-    
-    const collectionHtmlStr = `
-      <figcaption>Part of the ${name}</figcaption>
-      <img id="collectionImg" class="clickable" src="${imgUrl}">`
-    collectionEl.insertAdjacentHTML('beforeend', collectionHtmlStr);
+      const imgUrl = `https://image.tmdb.org/t/p/w185${poster_path}`
 
-    // Event listener on click of collection img
-    document.getElementById('collectionImg').addEventListener('click', () => {
-      fetchCollectionDetail(collectionId);
-    })
+      const collectionHtmlStr = `
+        <figcaption>Part of the ${name}</figcaption>
+        <img id="collectionImg" class="clickable" src="${imgUrl}">`
+      collectionEl.insertAdjacentHTML('beforeend', collectionHtmlStr);
+
+      // Event listener on click of collection img
+      document.getElementById('collectionImg').addEventListener('click', () => {
+        fetchCollectionDetail(collectionId);
+      });
+    } else if (userCategory === 'episode') {
+      // Destructre the seasonDataObj
+      const { seriesId, seasonDataObj } = seriesData;
+      const { name, poster_path, season_number } = seasonDataObj;
+
+      const imgUrl = `https://image.tmdb.org/t/p/w185${poster_path}`
+
+      const collectionHtmlStr = `
+        <figcaption>${name}</figcaption>
+        <img id="collectionImg" class="clickable" src="${imgUrl}">`
+      collectionEl.insertAdjacentHTML('beforeend', collectionHtmlStr);
+
+      // Event listener on click of season img
+      document.getElementById('collectionImg').addEventListener('click', () => {
+        displaySeasonModal(seriesId, season_number, seasonDataObj)
+      });
+    }
   };
+
+  // Function to render the cast list and listen to click on their image to give more detail on them.
+  const renderMovieTvCastList = (castArr) => {
+    // DOM selectors
+    const castListEl = document.querySelector("#castList");
+
+    // Create a cast information heading before the list
+    castListEl.insertAdjacentHTML("beforeBegin", "<h3>Cast: </h3>");
+    // Display only 10 cast members
+    for (let i = 0; i < 10 && i < castArr.length; i++) {
+      const imgUrl = castArr[i].profile_path
+        ? `https://image.tmdb.org/t/p/w92${castArr[i].profile_path}`
+        : PLACEHOLDER_URL;
+      
+      const htmlStr =
+        `<li class="col align-center" >
+          <img id="cast-${i}" src="${imgUrl}">
+          <p>${castArr[i].name}</p>
+          <p>${castArr[i].character}</p>
+        </li>`;
+      castListEl.insertAdjacentHTML("beforeend", htmlStr);
+
+      // Event listener to fetch the detail of the cast
+      document.querySelector(`#cast-${i}`).addEventListener("click", () => {
+        //fetch selected detail
+        fetchTmdbSelectedDetail(castArr[i].id, "person");
+      });
+    }
+  }
 
   // Function to render cast credits for Person searches
   const renderPersonCastCredits= (castsArr) => {
@@ -567,11 +585,11 @@ function renderDetails(selectedData, userCategory) {
       renderTvSeasonList();
     }
 
-    // Render Movie Director
+    // Render Movie && episode Director
     if (userCategory !== "tv"){
       renderMovieDirector(credits.crew);                   
     }
-    // Render cast list for Move and Tv
+    // Render cast list for Move, Tv, and episode
     renderMovieTvCastList(credits.cast);
 
     // If selected movie / tv is available to stream online
@@ -586,8 +604,8 @@ function renderDetails(selectedData, userCategory) {
 
 
     collectionEl.textContent = '';
-    if (belongs_to_collection) {
-      renderCollection();
+    if (belongs_to_collection || seriesData) {
+      renderCollectionOrSeason();
     }
     
   // render Person details
@@ -625,7 +643,7 @@ function renderDetails(selectedData, userCategory) {
 }
 
 // Function to add to the browser history list and call renderDetails
-function addHistory(selectedData, userCategory) {
+function addHistory(selectedData, userCategory, seriesData) {
   // Set the parameters for the page history to come back to
   const stateHistory = {
     page: history.state.page + 1,
@@ -641,7 +659,7 @@ function addHistory(selectedData, userCategory) {
 
   // Fetch the selection detail if Id was pass into the function
   if (selectedData) {
-    renderDetails(selectedData, userCategory);
+    renderDetails(selectedData, userCategory, seriesData);
     if (IS_DEBUGGING) {
       console.log(`Added to browser history: `, selectedData);
     }
@@ -720,79 +738,79 @@ async function fetchCollectionDetail(collectionId) {
   }
 }
 
+// This function is called when user click on the episode list inside the modal
+async function fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj) {
+  const fetchUrl =
+  `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits,videos`;
+
+  try {
+    const response = await fetch(fetchUrl);
+    const episodeData = await response.json();
+
+    if (IS_DEBUGGING) {
+      console.log(seriesId, seasonNumber, episode_number);
+      console.log(`Fetched selected episode data`, episodeData);
+    }
+
+    // Save reponse data to localStorage and add to history
+    saveSearchHistory(episodeData, 'episode');
+    addHistory(episodeData, 'episode', {seriesId, seasonDataObj});
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// This function is called after fetching the data about the selected season
+function displaySeasonModal(seriesId, seasonNumber, seasonDataObj) {
+  // Destructuring season object
+  const { episodes, name, overview } = seasonDataObj;
+
+  // Set the title of the modal
+  DOM_SELECTORS.modalHeaderEl.textContent = `${name}`;
+  if (overview) {
+    DOM_SELECTORS.modalHeaderEl.insertAdjacentHTML('beforeend', `<h4 style="font-size: .8em;">Season Overview: <p style="font-weight: 400; font-size: 16px;">${overview}</p></h4>`)
+  }
+
+  // Display the episodes for selected season
+  DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', `<h3>Episodes:</h3><br>`);
+
+  episodes.forEach((episodeOjb, i) => {
+    // Destructure episode object
+    const { air_date, name, overview, still_path, episode_number } = episodeOjb;
+
+    const imgUrl = still_path ? `https://image.tmdb.org/t/p/w185${still_path}` : ``;
+
+    // Insert html string into the modal list
+    const episodeHtmlStr = `
+      <li id="episode-${i}" class="clickable">
+        <div class="pure-g">
+          <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
+          <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
+            <h4>${episode_number}.${name}</h4>
+            <h5>Release Date: <span>${air_date}</span></h5>
+            <h5>Episode Overview:</h5>
+            <p class="text-left">${overview}</p><br>
+          </div>
+        </div>
+      </li>`;
+    DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', episodeHtmlStr);
+
+    // Event listener on click of an episode on the modal
+    document.querySelector(`#episode-${i}`).addEventListener('click', () => {
+      // Fetch the selected episode data and hide the modal
+      fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number, seasonDataObj);
+      myModal.hide();
+    });
+  });
+
+  // Style the modal and show
+  DOM_SELECTORS.modalContentEl.parentElement.style.maxWidth = MODAL_MAX_WIDTH;
+  myModal.show();
+};
+
 // Function to fetch the season detail using the seriesId that was retrieved from TMDB
 async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
-  // This function is called when user click on the episode list inside the modal
-  const fetchTmdbEpisodeDetail = async (seriesId, seasonNumber, episode_number) => {
-    const fetchUrl =
-    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits,videos`;
-
-    try {
-      const response = await fetch(fetchUrl);
-      const episodeData = await response.json();
-
-      if (IS_DEBUGGING) {
-        console.log(seriesId, seasonNumber, episode_number);
-        console.log(`Fetched selected episode data`, episodeData);
-      }
-
-      // Save reponse data to localStorage and add to history
-      saveSearchHistory(episodeData, 'episode');
-      addHistory(episodeData, 'episode');
-
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // This function is called after fetching the data about the selected season
-  const displaySeasonDetail = seasonDataObj => {
-    // Destructuring season object
-    const { episodes, name, overview } = seasonDataObj;
-
-    // Set the title of the modal
-    DOM_SELECTORS.modalHeaderEl.textContent = `${name}`;
-    if (overview) {
-      DOM_SELECTORS.modalHeaderEl.insertAdjacentHTML('beforeend', `<h4 style="font-size: .8em;">Season Overview: <p style="font-weight: 400; font-size: 16px;">${overview}</p></h4>`)
-    }
-
-    // Display the episodes for selected season
-    DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', `<h3>Episodes:</h3><br>`);
-
-    episodes.forEach((episodeOjb, i) => {
-      // Destructure episode object
-      const { air_date, name, overview, still_path, episode_number } = episodeOjb;
-
-      const imgUrl = still_path ? `https://image.tmdb.org/t/p/w185${still_path}` : ``;
-
-      // Insert html string into the modal list
-      const episodeHtmlStr = `
-        <li id="episode-${i}" class="clickable">
-          <div class="pure-g">
-            <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
-            <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
-              <h4>${episode_number}.${name}</h4>
-              <h5>Release Date: <span>${air_date}</span></h5>
-              <h5>Episode Overview:</h5>
-              <p class="text-left">${overview}</p><br>
-            </div>
-          </div>
-        </li>`;
-      DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', episodeHtmlStr);
-
-      // Event listener on click of an episode on the modal
-      document.querySelector(`#episode-${i}`).addEventListener('click', () => {
-        // Fetch the selected episode data and hide the modal
-        fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number);
-        myModal.hide();
-      });
-    });
-
-    // Style the modal and show
-    DOM_SELECTORS.modalContentEl.parentElement.style.maxWidth = MODAL_MAX_WIDTH;
-    myModal.show();
-  };
-
   // Fetch the selected season detail
   const fetchUrl =
     `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=images`;
@@ -807,7 +825,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
     }
 
     // Display a modal with the selected season information
-    displaySeasonDetail(seasonData);
+    displaySeasonModal(seriesId, seasonNumber, seasonData);
 
   } catch (error) {
     console.error(error);
@@ -844,8 +862,11 @@ async function fetchTmdbId(userCategory, userInput) {
       console.log(resultsArr);
     }
 
-    // create and append 5 possible matches to user query
-    for (let i = 0; i < 5 && i < resultsArr.length; i++) {
+    // Limit the result being display on the modal
+    let displayLimit = 5;
+
+    // create and append possible matches to user query
+    for (let i = 0; i < displayLimit && i < resultsArr.length; i++) {
       // Deconstruct result object
       const {
         name,
