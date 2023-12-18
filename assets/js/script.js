@@ -143,6 +143,7 @@ function renderDetails(selectedData, userCategory) {
   const selectedDetailEL = document.getElementById("selectedDetail");
   const playerAndStreamEl = document.getElementById("playerAndStream");
   const posterImgEl = document.getElementById("posterImg");
+  const collectionEl = document.querySelector('#collection');
 
   //#region Local Functions
 
@@ -346,10 +347,6 @@ function renderDetails(selectedData, userCategory) {
   }
 
   const renderCollection = () => {
-    // DOM selector
-    const collectionEl = document.querySelector('#collection');
-    collectionEl.textContent = '';
-
     // Destructure the collection object
     const {
       id: collectionId,
@@ -587,6 +584,8 @@ function renderDetails(selectedData, userCategory) {
       document.getElementById('streamingContainer').setAttribute('hidden', '');
     }
 
+
+    collectionEl.textContent = '';
     if (belongs_to_collection) {
       renderCollection();
     }
@@ -719,9 +718,6 @@ async function fetchCollectionDetail(collectionId) {
   } catch (error) {
     console.error(error);
   }
-
-  
-
 }
 
 // Function to fetch the season detail using the seriesId that was retrieved from TMDB
