@@ -16,6 +16,7 @@ const DOM_SELECTORS = {
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 const myModal = new bootstrap.Modal(DOM_SELECTORS.myModalEl);
 let ytPlayer;
+const MODAL_MAX_WIDTH = '60vw';
 
 
 //#region Youtube API
@@ -339,6 +340,31 @@ function renderDetails(selectedData, userCategory) {
     }
   }
 
+  const renderCollection = () => {
+    // DOM selector
+    const collectionEl = document.querySelector('#collection');
+    collectionEl.textContent = '';
+
+    // Destructure the collection object
+    const {
+      id: collectionId,
+      name,
+      poster_path,
+    } = belongs_to_collection;
+
+    const imgUrl = `https://image.tmdb.org/t/p/w185${poster_path}`
+    
+    const collectionHtmlStr = `
+      <figcaption>Part of the ${name}</figcaption>
+      <img id="collectionImg" class="clickable" src="${imgUrl}">`
+    collectionEl.insertAdjacentHTML('beforeend', collectionHtmlStr);
+
+    // Event listener on click of collection img
+    document.getElementById('collectionImg').addEventListener('click', () => {
+      fetchCollectionDetail(collectionId);
+    })
+  };
+
   // Function to render cast credits for Person searches
   const renderPersonCastCredits= (castsArr) => {
     // DOM selectors
@@ -485,7 +511,8 @@ function renderDetails(selectedData, userCategory) {
     release_dates,
     credits, 
     runtime,
-    seasons, 
+    seasons,
+    belongs_to_collection,
     videos,
     id: selectedId,
     ["watch/providers"]: streamingProviders
@@ -554,6 +581,10 @@ function renderDetails(selectedData, userCategory) {
     } else {
       document.getElementById('streamingContainer').setAttribute('hidden', '');
     }
+
+    if (belongs_to_collection) {
+      renderCollection();
+    }
     
   // render Person details
   } else {  // render Person details
@@ -612,8 +643,77 @@ function addHistory(selectedData, userCategory) {
 
 
 //#region TMDB API
+async function fetchCollectionDetail(collectionId) {
+  const displayCollectionModal = (collectionObj) => {
+    const { name, overview, parts } = collectionObj;
 
-// Function to fetch the movie detail using the movieId that was retrieved from TMDB
+    // Set the modal header to the name and oveview of the collection
+    DOM_SELECTORS.modalHeaderEl.textContent = name;
+    if (overview) {
+      DOM_SELECTORS.modalHeaderEl.insertAdjacentHTML('beforeend', `<h4 style="font-size: .8em;">Collection Overview: <p style="font-weight: 400; font-size: 16px;">${overview}</p></h4>`)
+    }
+
+    // Loop through the collection and display the list in modal body
+    parts.forEach( movieObj => {
+      // Destructure the movieObj
+      const {
+        id: movieId,
+        title,
+        overview,
+        poster_path,
+        media_type,
+        release_date
+      } = movieObj;
+
+      // Skip the list item if no release date
+      if (!release_date) {
+        return;
+      }
+
+      const imgUrl = `https://image.tmdb.org/t/p/w92${poster_path}`;
+
+      // HTML code to be insert onto modal list
+      const moiveHtmlStr = `
+        <li id="thumbnail-${movieId}" class="clickable">
+          <div class="pure-g">
+            <div class="pure-u-1-3"><img src="${imgUrl}"></div>
+            <div class="pure-u-2-3 col justify-around">
+              <h3>${title}</h3>
+              <p>Release Date: ${release_date}</p>
+              <p>Plot Summary: ${overview}</p>
+            </div>
+          </div>
+        </li>`;
+      DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', moiveHtmlStr);
+
+      // Event listener on click of modal list item
+      document.getElementById(`thumbnail-${movieId}`).addEventListener('click', () => {
+        fetchTmdbSelectedDetail(movieId, media_type);
+        myModal.hide();
+      });
+    });
+    DOM_SELECTORS.modalContentEl.parentElement.style.maxWidth = MODAL_MAX_WIDTH;
+    myModal.show();
+  }
+
+  const collectionUrl = `https://api.themoviedb.org/3/collection/${collectionId}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US`
+
+  try {
+    const response = await fetch(collectionUrl);
+    const collectionData = await response.json();
+    console.log(`Fetched: selected Collection details: `, collectionData);
+
+    displayCollectionModal(collectionData);
+
+  } catch (error) {
+    console.error(error);
+  }
+
+  
+
+}
+
+// Function to fetch the season detail using the seriesId that was retrieved from TMDB
 async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
   // This function is called when user click on the episode list inside the modal
   const fetchTmdbEpisodeDetail = async (seriesId, seasonNumber, episode_number) => {
@@ -680,7 +780,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
     });
 
     // Style the modal and show
-    DOM_SELECTORS.modalContentEl.parentElement.style.maxWidth = '70vw';
+    DOM_SELECTORS.modalContentEl.parentElement.style.maxWidth = MODAL_MAX_WIDTH;
     myModal.show();
   };
 
@@ -702,6 +802,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
   }
 }
 
+// Function to fetch the movie detail using the movieId that was retrieved from TMDB
 async function fetchTmdbSelectedDetail(selectedId, userCategory) {
   // Create an url for API call
   const url = `https://api.themoviedb.org/3/${userCategory}/${selectedId}?api_key=a3a4488d24de37de13b91ee3283244ec&append_to_response=videos,images,credits,content_ratings,combined_credits,external_ids,watch/providers,release_dates`;
