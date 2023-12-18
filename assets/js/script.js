@@ -82,9 +82,9 @@ function renderYouTubePlayer() {
 
 //#region Misc Functions
 // Save data to array and localStorage
-function saveSearchHistory(selectedData, userCategory) {
+function saveSearchHistory(selectedData, userCategory, seriesData) {
   // Save user selection objects into history array
-  historyArr.push({ selectedData, userCategory });
+  historyArr.push({ selectedData, userCategory, seriesData });
 
   // Limit to showing 9 search history
   if (historyArr.length > 9) {
@@ -108,7 +108,7 @@ function renderSearchHistory() {
 
   for (let i = 0; i < historyArr.length; i++) {
     // Deconstruct the objects
-    const { selectedData, userCategory } = historyArr[i];
+    const { selectedData, userCategory, seriesData } = historyArr[i];
     const { poster_path, profile_path, still_path } = selectedData;
 
     // Check if the image exist, if not render a placeholder
@@ -129,7 +129,7 @@ function renderSearchHistory() {
     // event listener for each history in the list
     document.getElementById(`history-${i}`).addEventListener("click", () => {
       //fetch selected detail
-      addHistory(selectedData, userCategory);
+      addHistory(selectedData, userCategory, seriesData );
       if (IS_DEBUGGING) {
         console.log(`Search history: selected ${userCategory} details: `, selectedData);
       }
