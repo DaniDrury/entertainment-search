@@ -189,14 +189,9 @@ function renderDetails(selectedData, userCategory) {
   }
 
   // Function to render the rating of Movie/Tv show
-  const renderRatingRuntime = (ratingsArr) => {
+  const renderRating = (ratingsArr) => {
     // DOM selectors
     const ratingEl = document.querySelector("#rating");
-    const runtimeEl = document.querySelector("#runtime");
-    
-    // Default text
-    ratingEl.textContent = `N/A`;
-    runtimeEl.insertAdjacentHTML('afterbegin', runtime);
 
     // Loop through the rating array for the correct rating
     for (let i = 0; i < ratingsArr.length; i++) {
@@ -478,8 +473,10 @@ function renderDetails(selectedData, userCategory) {
     name,
     poster_path,
     profile_path,
+    still_path,
     release_date,
     first_air_date,
+    air_date,
     birthday, 
     place_of_birth,
     overview, 
@@ -497,8 +494,8 @@ function renderDetails(selectedData, userCategory) {
   const PLACEHOLDER_URL = 'https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe957375e70239d6abdd549fd7568c89281b2179b5f4470e2e12895792dfa5.svg';
 
   // Render the profile/poster for user selected choice
-  posterImgEl.src = poster_path || profile_path
-    ? `https://image.tmdb.org/t/p/w342${poster_path || profile_path}`
+  posterImgEl.src = poster_path || profile_path || still_path
+    ? `https://image.tmdb.org/t/p/w342${poster_path || profile_path|| still_path}`
     : PLACEHOLDER_URL;
 
   // render different details depending on search category (movie, tv or person)
@@ -512,9 +509,9 @@ function renderDetails(selectedData, userCategory) {
       `<h2>${title || name}</h2>
       <h3>Plot Summary</h3>
       <p>${overview}</p>
-      <h3>Release Date: <span>${release_date || first_air_date}</span></h3>
-      <h3>Rating: <span id="rating"></span></h3>
-      <h3>Runtime: <span id="runtime"> mins</span></h3>
+      <h3>Release Date: <span>${release_date || first_air_date || air_date}</span></h3>
+      <h3>Rating: <span id="rating">N/A</span></h3>
+      <h3>Runtime: <span id="runtime"> ${runtime} mins</span></h3>
       <ul id="directorsList" class="row gap"></ul>
       <ul id="castList" class="row gap"></ul>
       <ul id="seasonsList" class="row gap"></ul>`;
@@ -529,10 +526,12 @@ function renderDetails(selectedData, userCategory) {
       : playerAndStreamEl.firstElementChild.setAttribute('hidden', '');
 
     // Get the right response data for the rating
-    const ratings = userCategory === "movie"
+    if (userCategory !== 'episode') {
+      const ratings = userCategory === "movie"
         ? release_dates.results
         : content_ratings.results;
-    renderRatingRuntime(ratings);
+      renderRating(ratings);
+    }
 
     // If seasons exist, ie. a tv show with multiple seasons
     if (seasons) {
@@ -540,7 +539,7 @@ function renderDetails(selectedData, userCategory) {
     }
 
     // Render Movie Director
-    if (userCategory==="movie"){
+    if (userCategory !== "tv"){
       renderMovieDirector(credits.crew);                   
     }
     // Render cast list for Move and Tv
@@ -548,10 +547,14 @@ function renderDetails(selectedData, userCategory) {
 
     // If selected movie / tv is available to stream online
     // else hide the streaming option section
-    streamingProviders.results.US
-      ? renderStreamingOption(streamingProviders.results.US, name || title)
-      : document.getElementById('streamingContainer').setAttribute('hidden', '');
-
+    if (userCategory !== 'episode') {
+      streamingProviders.results.US
+        ? renderStreamingOption(streamingProviders.results.US, name || title)
+        : document.getElementById('streamingContainer').setAttribute('hidden', '');
+    } else {
+      document.getElementById('streamingContainer').setAttribute('hidden', '');
+    }
+    
   // render Person details
   } else {  // render Person details
     // sets visibility of trailer and streaming options elements to none
@@ -615,7 +618,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
   // This function is called when user click on the episode list inside the modal
   const fetchTmdbEpisodeDetail = async (seriesId, seasonNumber, episode_number) => {
     const fetchUrl =
-    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits`;
+    `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episode_number}?api_key=a3a4488d24de37de13b91ee3283244ec&language=en-US&append_to_response=credits,videos`;
 
     try {
       const response = await fetch(fetchUrl);
@@ -626,6 +629,7 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
       // Save reponse data to localStorage and add to history
       // saveSearchHistory(episodeData, 'tv');
       // addHistory(episodeData, 'tv');
+      renderDetails(episodeData, 'episode');
 
     } catch (error) {
       console.error(error);
@@ -653,20 +657,21 @@ async function fetchTmdbSeasonDetail(seriesId, seasonNumber) {
       const imgUrl = still_path ? `https://image.tmdb.org/t/p/w185${still_path}` : ``;
 
       // Insert html string into the modal list
-      const episodeHtmlStr =
-      `<li id="episode-${i}" class="clickable">
-        <div class="pure-g">
-          <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
-          <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
-            <h4>${episode_number}.${name}</h4>
-            <h5>Release Date: <span>${air_date}</span></h5>
-            <h5>Episode Overview:</h5>
-            <p class="text-left">${overview}</p><br>
+      const episodeHtmlStr = `
+        <li id="episode-${i}" class="clickable">
+          <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
+            <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
+              <h4>${episode_number}.${name}</h4>
+              <h5>Release Date: <span>${air_date}</span></h5>
+              <h5>Episode Overview:</h5>
+              <p class="text-left">${overview}</p><br>
+            </div>
           </div>
-        </div>
-      </li>`;
+        </li>`;
       DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', episodeHtmlStr);
 
+      // Event listener on click of an episode on the modal
       document.querySelector(`#episode-${i}`).addEventListener('click', () => {
         // Fetch the selected episode data and hide the modal
         fetchTmdbEpisodeDetail(seriesId, seasonNumber, episode_number);
