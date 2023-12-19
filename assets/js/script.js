@@ -638,6 +638,7 @@ function addHistory(selectedData, userCategory, seriesData) {
     page: history.state.page + 1,
     selectedData,
     userCategory,
+    seriesData
   };
 
   // Add popstate history
