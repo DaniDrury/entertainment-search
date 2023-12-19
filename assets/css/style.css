@@ -29,17 +29,19 @@ h1 {
     margin-bottom: 2rem;
     cursor: pointer;
 }
-H1:hover{
+
+h1:hover {
     opacity: 50%;
-  }
-  img {
+}
 
-    transition: all  2s ease-in-out;
+.hover {
+    transition: all 500ms ease-in-out;
+}
 
-  }
-  img:hover {
-    width: 100%;
-  }
+.hover:hover {
+    width: 7em;
+}
+
 h3 span {
     font-size: 16px;
     font-weight: 400;
@@ -122,6 +124,10 @@ footer p {
     text-align: left;
 }
 
+.text-center {
+    text-align: center;
+}
+
 .clickable {
     cursor: pointer;
 }
@@ -200,6 +206,10 @@ footer p {
 
 #selectedDetail {
     padding: 1em 1em;
+}
+
+#playerAndStream {
+    width: 100%;
 }
 
 

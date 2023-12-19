@@ -16,7 +16,7 @@ const DOM_SELECTORS = {
 const historyArr = JSON.parse(localStorage.getItem("movie")) || [];
 const myModal = new bootstrap.Modal(DOM_SELECTORS.myModalEl);
 let ytPlayer;
-const MODAL_MAX_WIDTH = '60vw';
+const MODAL_MAX_WIDTH = '90vw';
 
 // Change this to true when debugging / testing
 const IS_DEBUGGING = false;
@@ -58,24 +58,6 @@ function renderYouTubePlayer() {
     },
   });
 }
-// Fetch the youtube trailer and display on the iframe
-/* async function fetchYoutubeTrailer(userInput) {
-  const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${userInput}%201%20offical%20trailer&key=AIzaSyAUg-lxn3GSY-w58E4EFURM6w-gOrZmbOw`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    // Get the trailer id
-    const videoId = data.items[0].id.videoId;
-
-    // Cue up the trailer video, but doesn't start
-    ytPlayer.cueVideoById(videoId);
-  } catch (error) {
-    alert(error.name);
-    console.log(error);
-  }
-} */
 
 //#endregion Youtube API
 
@@ -234,7 +216,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
       const seasonDetailHtml =
         `<li class='col align-center'>
           <p>${name}</p>
-          <img id="seasonListItem-${i}" src="https://image.tmdb.org/t/p/w92${poster_path}">
+          <img id="seasonListItem-${i}" class="hover" src="https://image.tmdb.org/t/p/w92${poster_path}">
           <p>Episode Count: ${episode_count}</p>
         </li>`;
       tvSeasonsEl.insertAdjacentHTML("beforeend", seasonDetailHtml);
@@ -266,7 +248,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
       
       const directorHtmlStr = 
         `<li>
-          <img id="director-${i}" src="${imgUrl}">
+          <img id="director-${i}" class="hover" src="${imgUrl}">
           <p>${name}</p>
         </li>`;
       
@@ -378,7 +360,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
       
       const htmlStr =
         `<li class="col align-center" >
-          <img id="cast-${i}" src="${imgUrl}">
+          <img id="cast-${i}" class="hover" src="${imgUrl}">
           <p>${castArr[i].name}</p>
           <p>${castArr[i].character}</p>
         </li>`;
@@ -430,7 +412,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
       // HTML code to be insert to the page
       const htmlStr = `
         <li>
-          <img id="cast-${id}" src="${imgUrl}" alt="${title} Movie Poster">
+          <img id="cast-${id}" class="hover" src="${imgUrl}" alt="${title} Movie Poster">
           <h4>${title}</h4>
           <p>Character: <strong>${character || 'Self'}</strong></p>
         </li>`;
@@ -501,7 +483,7 @@ function renderDetails(selectedData, userCategory, seriesData) {
       // HTML code to be insert to the page
       const htmlStr =`
         <li>
-          <img id="crew-${id}" src="${imgUrl}" alt="${title} Movie Poster">
+          <img id="crew-${id}" class="hover" src="${imgUrl}" alt="${title} Movie Poster">
           <p>${title}</p>
           <p>Job: ${job}</p>
         </li>`;
@@ -780,7 +762,7 @@ function displaySeasonModal(seriesId, seasonNumber, seasonDataObj, tvShowDataObj
   }
 
   // Display the episodes for selected season
-  DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', `<h3>Episodes:</h3><br>`);
+  DOM_SELECTORS.modalListEl.insertAdjacentHTML('beforeend', `<h3 class="text-center">EPISODES</h3><br>`);
 
   episodes.forEach((episodeOjb, i) => {
     // Destructure episode object
@@ -792,8 +774,8 @@ function displaySeasonModal(seriesId, seasonNumber, seasonDataObj, tvShowDataObj
     const episodeHtmlStr = `
       <li id="episode-${i}" class="clickable">
         <div class="pure-g">
-          <div class="pure-u-1-1 pure-u-md-1-3"><img class="pure-img" src="${imgUrl}"></div>
-          <div class="pure-u-1-1 pure-u-md-2-3 col justify-around align-start gap">
+          <div class="pure-u-1 pure-u-md-1-3 col align-center"><img class="pure-img" src="${imgUrl}"></div>
+          <div class="pure-u-1 pure-u-md-2-3 col justify-around align-start gap">
             <h4>${episode_number}.${name}</h4>
             <h5>Release Date: <span>${air_date}</span></h5>
             <h5>Episode Overview:</h5>
