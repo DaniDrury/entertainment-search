@@ -1,8 +1,6 @@
 # entertainment-search
 
 ## Description
-
-
 We are **Character Coders** and as fans of media - Movies, TV Shows, actors, directors and more, we wanted a quick and easy way to find out up-to-date information about our favorite media.
 
 How often are you watching a show and see an actor that looks SO familiar, but you can’t quite place where you’ve seen them before? This happens to me ALL THE TIME! With our the Character Coder Entertainment Search, it’s easy to look up the show or movie you are watching, get a cast list, use that cast list to link to actor profiles that show other cast and crew edits, and so much more!
@@ -12,25 +10,17 @@ Watch trailers, season Season and Episode breakdowns, and even see how and where
 The Character Coder Entertainment Search is your one-stop-shop for Movie, TV Show and actor information!
 
 
-## Table of Contents
-
-If your README is long, add a table of contents to make it easy for users to find what they need.
-
-- [Usage](#usage)
-- [Credits](#credits)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [License](#license)
-
-
 ## Deployed Application
 
 Click [here](https://danidrury.github.io/entertainment-search/) for Deployed Application
 
 ## Usage
 
-Go to the deployed application and 
+Go to the deployed application. Select a search category and input a title or person name, then click search! Navigate through search results, click on images to search new titles or people.
+Previous searches will display under the input section.
 
+![full page screenshot of landing page](./assets/images/landingpage.png)
+![full page screenshot of search results](./assets/images/searchresults.png)
 
 ## Credits
 
